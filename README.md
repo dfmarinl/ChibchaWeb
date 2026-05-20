@@ -4,7 +4,7 @@ Plataforma de gestión de hosting web orientada a la administración de usuarios
 
 ---
 
-# 📌 Descripción del proyecto
+# Descripción del proyecto
 
 ChibchaWEB es una solución orientada a la gestión integral de servicios de hosting web. El sistema permite administrar clientes, empleados y administradores, así como realizar procesos relacionados con contratación de planes, registro de dominios, gestión de pagos y atención de tickets de soporte.
 
@@ -12,7 +12,7 @@ El proyecto fue diseñado bajo un enfoque orientado a objetos, incorporando mode
 
 ---
 
-# 🚀 Funcionalidades principales
+# Funcionalidades principales
 
 - Gestión de usuarios y control de acceso por roles.
 - Administración de planes de hosting.
@@ -25,7 +25,7 @@ El proyecto fue diseñado bajo un enfoque orientado a objetos, incorporando mode
 
 ---
 
-# 🏗️ Arquitectura del sistema
+# Arquitectura del sistema
 
 El sistema se encuentra dividido en diferentes módulos funcionales:
 
@@ -39,7 +39,7 @@ El sistema se encuentra dividido en diferentes módulos funcionales:
 
 ---
 
-# 🎨 Patrones de diseño implementados
+# Patrones de diseño implementados
 
 El proyecto incorpora diferentes patrones de diseño GoF para resolver necesidades específicas dentro de la arquitectura:
 
@@ -56,7 +56,7 @@ El proyecto incorpora diferentes patrones de diseño GoF para resolver necesidad
 
 ---
 
-# 🧩 Tecnologías utilizadas
+# Tecnologías utilizadas
 
 ## Frontend
 - React
@@ -80,7 +80,7 @@ El proyecto incorpora diferentes patrones de diseño GoF para resolver necesidad
 
 ---
 
-# 📂 Estructura del proyecto
+# Estructura del proyecto
 
 ```bash
 chibchaweb/
@@ -108,7 +108,7 @@ chibchaweb/
 
 ---
 
-# 📖 Modelado realizado
+# Modelado realizado
 
 El proyecto incluye:
 
@@ -122,7 +122,7 @@ El proyecto incluye:
 
 ---
 
-# 🖥️ Interfaz gráfica
+# Interfaz gráfica
 
 La interfaz gráfica fue diseñada utilizando Figma y posteriormente implementada en ReactJS, manteniendo separación por roles:
 
@@ -132,7 +132,7 @@ La interfaz gráfica fue diseñada utilizando Figma y posteriormente implementad
 
 ---
 
-# 🔐 Seguridad
+# Seguridad
 
 El sistema contempla mecanismos de cifrado aplicados a información sensible como:
 
@@ -144,7 +144,7 @@ El cifrado se implementa mediante el patrón Strategy para permitir flexibilidad
 
 ---
 
-# ⚙️ Ejecución del proyecto
+# Ejecución del proyecto
 
 ## Frontend
 
@@ -156,9 +156,9 @@ npm run dev
 
 ---
 
-# 📌 Estado del proyecto
+# Estado del proyecto
 
-🚧 Proyecto en desarrollo.
+Proyecto en desarrollo.
 
 Actualmente se encuentran implementados:
 
@@ -170,13 +170,13 @@ Actualmente se encuentran implementados:
 
 ---
 
-# 👨‍💻 Autor
+# Autor
 
 **David Fernando Marín Lancheros**  
 Ingeniería de Sistemas
 
 ---
 
-# 📄 Licencia
+# Licencia
 
 Proyecto desarrollado con fines académicos.
