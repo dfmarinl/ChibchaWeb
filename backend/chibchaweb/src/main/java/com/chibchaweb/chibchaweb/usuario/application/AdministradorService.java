@@ -3,8 +3,9 @@ package com.chibchaweb.chibchaweb.usuario.application;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.chibchaweb.chibchaweb.acceso.domain.NombreRol;
 import com.chibchaweb.chibchaweb.usuario.domain.Administrador;
-import com.chibchaweb.chibchaweb.usuario.domain.AdministradorFactory;
+import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarAdministradorRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.CrearAdministradorRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.AdministradorResponse;
@@ -18,11 +19,11 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.Administrado
 @Transactional
 public class AdministradorService {
 
-    private final AdministradorFactory factory;
+    private final UsuarioFactory factory;
     private final AdministradorJpaRepository jpaRepository;
     private final AdministradorDtoMapper dtoMapper;
 
-    public AdministradorService(AdministradorFactory factory,
+    public AdministradorService(UsuarioFactory factory,
                                 AdministradorJpaRepository jpaRepository,
                                 AdministradorDtoMapper dtoMapper) {
         this.factory = factory;
@@ -34,9 +35,7 @@ public class AdministradorService {
         if (jpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
-        Administrador admin = factory.crearAdministrador(
-                null, request.nombre(), request.email(), request.telefono(),
-                request.nivelAcceso());
+        Administrador admin = factory.crearUsuario(NombreRol.ADMINISTRADOR, request);
         AdministradorJpa jpa = toJpa(admin);
         AdministradorJpa saved = jpaRepository.save(jpa);
         return dtoMapper.toResponse(toDomain(saved));

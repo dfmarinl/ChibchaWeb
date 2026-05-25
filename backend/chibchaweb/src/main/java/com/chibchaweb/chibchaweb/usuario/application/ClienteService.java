@@ -3,8 +3,9 @@ package com.chibchaweb.chibchaweb.usuario.application;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.chibchaweb.chibchaweb.acceso.domain.NombreRol;
 import com.chibchaweb.chibchaweb.usuario.domain.Cliente;
-import com.chibchaweb.chibchaweb.usuario.domain.ClienteFactory;
+import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.CrearClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.ClienteResponse;
@@ -19,11 +20,11 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpaRe
 @Transactional
 public class ClienteService {
 
-    private final ClienteFactory factory;
+    private final UsuarioFactory factory;
     private final ClienteJpaRepository jpaRepository;
     private final ClienteDtoMapper dtoMapper;
 
-    public ClienteService(ClienteFactory factory, ClienteJpaRepository jpaRepository,
+    public ClienteService(UsuarioFactory factory, ClienteJpaRepository jpaRepository,
                           ClienteDtoMapper dtoMapper) {
         this.factory = factory;
         this.jpaRepository = jpaRepository;
@@ -34,9 +35,7 @@ public class ClienteService {
         if (jpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
-        Cliente cliente = factory.crearCliente(
-                null, request.nombre(), request.email(), request.telefono(),
-                request.direccion(), request.documentoIdentidad(), request.region());
+        Cliente cliente = factory.crearUsuario(NombreRol.CLIENTE, request);
         ClienteJpa jpa = toJpa(cliente);
         ClienteJpa saved = jpaRepository.save(jpa);
         return dtoMapper.toResponse(toDomain(saved));

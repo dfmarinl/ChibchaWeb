@@ -3,8 +3,9 @@ package com.chibchaweb.chibchaweb.usuario.application;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.chibchaweb.chibchaweb.acceso.domain.NombreRol;
 import com.chibchaweb.chibchaweb.usuario.domain.Empleado;
-import com.chibchaweb.chibchaweb.usuario.domain.EmpleadoFactory;
+import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarEmpleadoRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.CrearEmpleadoRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.EmpleadoResponse;
@@ -18,11 +19,11 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.EmpleadoJpaR
 @Transactional
 public class EmpleadoService {
 
-    private final EmpleadoFactory factory;
+    private final UsuarioFactory factory;
     private final EmpleadoJpaRepository jpaRepository;
     private final EmpleadoDtoMapper dtoMapper;
 
-    public EmpleadoService(EmpleadoFactory factory, EmpleadoJpaRepository jpaRepository,
+    public EmpleadoService(UsuarioFactory factory, EmpleadoJpaRepository jpaRepository,
                            EmpleadoDtoMapper dtoMapper) {
         this.factory = factory;
         this.jpaRepository = jpaRepository;
@@ -33,9 +34,7 @@ public class EmpleadoService {
         if (jpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
-        Empleado empleado = factory.crearEmpleado(
-                null, request.nombre(), request.email(), request.telefono(),
-                request.cargo(), request.departamento(), request.salario());
+        Empleado empleado = factory.crearUsuario(NombreRol.EMPLEADO, request);
         EmpleadoJpa jpa = toJpa(empleado);
         EmpleadoJpa saved = jpaRepository.save(jpa);
         return dtoMapper.toResponse(toDomain(saved));
