@@ -5,6 +5,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:80
 export const ROUTES = {
   PUBLIC: {
     LOGIN: '/login',
+    REGISTER: '/register',
     ROLE_SELECTOR: '/select-role',
   },
   ADMIN: {

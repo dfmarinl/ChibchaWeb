@@ -1,28 +1,108 @@
-import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Search, Edit, Trash2, Eye, Loader2 } from 'lucide-react';
 import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { PageHeader } from '../../components/common';
 import { Table, Thead, Tbody, Th, Tr, Td, EmptyState } from '../../components/tables';
-import { mockUsers } from '../../mock';
-import { USER_ROLES } from '../../constants';
+import Modal from '../../components/ui/Modal';
+import ClientForm from './ClientForm';
+import ClientDetail from './ClientDetail';
+import { clientsApi, Client, CreateClientData, UpdateClientData } from '../../api/clients';
+import { authApi } from '../../api/auth';
 
 const ClientsPage: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const clients = mockUsers.filter(
-    (u) =>
-      u.role === USER_ROLES.CLIENT &&
-      (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [viewTarget, setViewTarget] = useState<Client | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchClients = async () => {
+    try {
+      setError('');
+      const data = await clientsApi.getAll();
+      setClients(data);
+    } catch {
+      setError('Error al cargar clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const filtered = clients.filter(
+    (c) =>
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: string) => {
-    return status === 'active' ? (
-      <Badge variant='success' dot>Activo</Badge>
-    ) : (
-      <Badge variant='error' dot>Inactivo</Badge>
-    );
+  const handleCreate = async (data: CreateClientData | UpdateClientData) => {
+    setSubmitting(true);
+    try {
+      await authApi.registerCliente(data as CreateClientData);
+      setModalMode(null);
+      await fetchClients();
+    } catch {
+      setError('Error al crear cliente');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const handleUpdate = async (data: CreateClientData | UpdateClientData) => {
+    if (!selectedClient) return;
+    setSubmitting(true);
+    try {
+      await clientsApi.update(selectedClient.id, data);
+      setModalMode(null);
+      setSelectedClient(null);
+      await fetchClients();
+    } catch {
+      setError('Error al actualizar cliente');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await clientsApi.delete(deleteTarget.id);
+      setDeleteTarget(null);
+      await fetchClients();
+    } catch {
+      setError('Error al eliminar cliente');
+    }
+  };
+
+  const openEdit = (client: Client) => {
+    setSelectedClient(client);
+    setModalMode('edit');
+  };
+
+  const closeModal = () => {
+    setModalMode(null);
+    setSelectedClient(null);
+  };
+
+  const getStatusBadge = () => (
+    <Badge variant='success' dot>Activo</Badge>
+  );
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-64'>
+        <Loader2 className='w-8 h-8 animate-spin text-primary-600' />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -30,11 +110,17 @@ const ClientsPage: React.FC = () => {
         title='Gestión de Clientes'
         description='Administra los clientes registrados en la plataforma'
         action={
-          <Button variant='primary' leftIcon={<Plus className='w-4 h-4' />}>
+          <Button variant='primary' leftIcon={<Plus className='w-4 h-4' />} onClick={() => setModalMode('create')}>
             Nuevo Cliente
           </Button>
         }
       />
+
+      {error && (
+        <div className='mb-4 p-3 rounded-lg bg-error-50 border border-error-200'>
+          <p className='text-sm text-error-700'>{error}</p>
+        </div>
+      )}
 
       <Card variant='bordered'>
         <CardHeader>
@@ -52,8 +138,8 @@ const ClientsPage: React.FC = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent padding='none'>
-          {clients.length === 0 ? (
+        <CardContent className='p-0'>
+          {filtered.length === 0 ? (
             <EmptyState
               message='No se encontraron clientes'
               description='No hay clientes que coincidan con tu búsqueda.'
@@ -64,37 +150,40 @@ const ClientsPage: React.FC = () => {
                 <Tr>
                   <Th>Cliente</Th>
                   <Th>Email</Th>
-                  <Th>Empresa</Th>
+                  <Th>Documento</Th>
                   <Th>Teléfono</Th>
+                  <Th>Región</Th>
                   <Th>Estado</Th>
-                  <Th>Fecha Registro</Th>
                   <Th>Acciones</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {clients.map((client) => (
+                {filtered.map((client) => (
                   <Tr key={client.id}>
                     <Td>
                       <div className='flex items-center gap-3'>
                         <div className='w-10 h-10 bg-success-100 rounded-full flex items-center justify-center'>
                           <span className='text-sm font-medium text-success-700'>
-                            {client.name.charAt(0)}
+                            {client.nombre.charAt(0)}
                           </span>
                         </div>
-                        <span className='font-medium'>{client.name}</span>
+                        <span className='font-medium'>{client.nombre}</span>
                       </div>
                     </Td>
                     <Td>{client.email}</Td>
-                    <Td>{client.company || '-'}</Td>
-                    <Td>{client.phone || '-'}</Td>
-                    <Td>{getStatusBadge(client.status)}</Td>
-                    <Td>{new Date(client.createdAt).toLocaleDateString('es-CO')}</Td>
+                    <Td>{client.documentoIdentidad}</Td>
+                    <Td>{client.telefono || '-'}</Td>
+                    <Td>{client.region || '-'}</Td>
+                    <Td>{getStatusBadge()}</Td>
                     <Td>
-                      <div className='flex items-center gap-2'>
-                        <Button variant='ghost' size='sm'>
+                      <div className='flex items-center gap-1'>
+                        <Button variant='ghost' size='sm' onClick={() => setViewTarget(client)}>
+                          <Eye className='w-4 h-4' />
+                        </Button>
+                        <Button variant='ghost' size='sm' onClick={() => openEdit(client)}>
                           <Edit className='w-4 h-4' />
                         </Button>
-                        <Button variant='ghost' size='sm'>
+                        <Button variant='ghost' size='sm' onClick={() => setDeleteTarget(client)}>
                           <Trash2 className='w-4 h-4 text-error-600' />
                         </Button>
                       </div>
@@ -106,6 +195,88 @@ const ClientsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Modal */}
+      <Modal
+        open={modalMode === 'create'}
+        onClose={closeModal}
+        title='Nuevo Cliente'
+        footer={
+          <>
+            <Button variant='outline' onClick={closeModal}>Cancelar</Button>
+            <Button
+              variant='primary'
+              isLoading={submitting}
+              onClick={() => {
+                const form = document.querySelector('#client-form') as HTMLFormElement;
+                form?.requestSubmit();
+              }}
+            >
+              Crear
+            </Button>
+          </>
+        }
+      >
+        <ClientForm id='client-form' onSubmit={handleCreate} isLoading={submitting} />
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={modalMode === 'edit'}
+        onClose={closeModal}
+        title='Editar Cliente'
+        footer={
+          <>
+            <Button variant='outline' onClick={closeModal}>Cancelar</Button>
+            <Button
+              variant='primary'
+              isLoading={submitting}
+              onClick={() => {
+                const form = document.querySelector('#client-form') as HTMLFormElement;
+                form?.requestSubmit();
+              }}
+            >
+              Guardar
+            </Button>
+          </>
+        }
+      >
+        {selectedClient && (
+          <ClientForm id='client-form' initialData={selectedClient} onSubmit={handleUpdate} isLoading={submitting} />
+        )}
+      </Modal>
+
+      {/* View Details */}
+      <Modal
+        open={viewTarget !== null}
+        onClose={() => setViewTarget(null)}
+        title='Detalles del Cliente'
+        footer={
+          <Button variant='outline' onClick={() => setViewTarget(null)}>Cerrar</Button>
+        }
+      >
+        {viewTarget && <ClientDetail client={viewTarget} />}
+      </Modal>
+
+      {/* Delete Confirmation */}
+      <Modal
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title='Eliminar Cliente'
+        footer={
+          <>
+            <Button variant='outline' onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button variant='danger' onClick={handleDelete}>Eliminar</Button>
+          </>
+        }
+      >
+        {deleteTarget && (
+          <p className='text-secondary-700'>
+            ¿Estás seguro de eliminar a <span className='font-semibold'>{deleteTarget.nombre}</span>?
+            Esta acción no se puede deshacer.
+          </p>
+        )}
+      </Modal>
     </div>
   );
 };

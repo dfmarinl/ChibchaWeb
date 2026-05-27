@@ -1,12 +1,20 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../api/users';
 import { ROUTES, USER_ROLES, UserRole } from '../constants';
+import { authApi, RegisterClienteData } from '../api/auth';
+
+const ROLE_MAP: Record<string, UserRole> = {
+  CLIENTE: USER_ROLES.CLIENT,
+  ADMINISTRADOR: USER_ROLES.ADMIN,
+  EMPLEADO: USER_ROLES.EMPLOYEE,
+};
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<string>;
+  login: (email: string, password: string) => Promise<string>;
+  register: (data: RegisterClienteData) => Promise<string>;
   logout: () => void;
 }
 
@@ -25,34 +33,71 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<string> => {
+  const login = async (email: string, password: string): Promise<string> => {
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const response = await authApi.login({ email, contrasena: password });
 
-    const foundUser = await import('../mock/users').then(({ mockUsers }) =>
-      mockUsers.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.role === role
-      )
-    );
+      const mappedRole = ROLE_MAP[response.rol];
+      if (!mappedRole) {
+        throw new Error(`Rol desconocido: ${response.rol}`);
+      }
 
-    if (foundUser) {
-      const authData = {
-        user: foundUser,
-        token: `token-${foundUser.id}-${Date.now()}`,
+      const userData: User = {
+        id: String(response.usuarioId),
+        email: response.email,
+        name: response.email.split('@')[0],
+        role: mappedRole,
+        createdAt: new Date().toISOString(),
+        status: 'active',
       };
 
-      localStorage.setItem('user', JSON.stringify(authData.user));
-      localStorage.setItem('authToken', authData.token);
-      setUser(authData.user);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('authToken', response.token);
+      setUser(userData);
 
-      const redirectPath = getRedirectPath(authData.user.role);
+      const redirectPath = getRedirectPath(mappedRole);
       setIsLoading(false);
       return redirectPath;
+    } catch (error) {
+      setIsLoading(false);
+      throw new Error('Credenciales inválidas');
     }
+  };
 
-    setIsLoading(false);
-    throw new Error('Credenciales inválidas o rol incorrecto');
+  const register = async (data: RegisterClienteData): Promise<string> => {
+    setIsLoading(true);
+
+    try {
+      const response = await authApi.registerCliente(data);
+
+      const mappedRole = ROLE_MAP[response.rol];
+      if (!mappedRole) {
+        throw new Error(`Rol desconocido: ${response.rol}`);
+      }
+
+      const userData: User = {
+        id: String(response.usuarioId),
+        email: response.email,
+        name: data.nombre,
+        role: mappedRole,
+        createdAt: new Date().toISOString(),
+        status: 'active',
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('authToken', response.token);
+      setUser(userData);
+
+      const redirectPath = getRedirectPath(mappedRole);
+      setIsLoading(false);
+      return redirectPath;
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof Error) throw error;
+      throw new Error('Error al registrar usuario');
+    }
   };
 
   const logout = () => {
@@ -79,6 +124,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAuthenticated: !!user,
     isLoading,
     login,
+    register,
     logout,
   };
 

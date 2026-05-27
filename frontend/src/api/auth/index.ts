@@ -1,20 +1,26 @@
 import apiClient from '../axios';
-import { UserRole } from '../../constants';
 
 export interface LoginCredentials {
   email: string;
-  password: string;
-  role: UserRole;
+  contrasena: string;
+}
+
+export interface RegisterClienteData {
+  nombre: string;
+  email: string;
+  contrasena: string;
+  telefono?: string;
+  direccion?: string;
+  documentoIdentidad: string;
+  region?: string;
 }
 
 export interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: UserRole;
-  };
   token: string;
+  sesionId: number;
+  usuarioId: number;
+  email: string;
+  rol: string;
 }
 
 export const authApi = {
@@ -23,12 +29,17 @@ export const authApi = {
     return response.data;
   },
 
+  registerCliente: async (data: RegisterClienteData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/registro/cliente', data);
+    return response.data;
+  },
+
   logout: async (): Promise<void> => {
     await apiClient.post('/auth/logout');
   },
 
-  getCurrentUser: async (): Promise<AuthResponse['user']> => {
-    const response = await apiClient.get<AuthResponse['user']>('/auth/me');
+  getCurrentUser: async (): Promise<AuthResponse> => {
+    const response = await apiClient.get<AuthResponse>('/auth/me');
     return response.data;
   },
 };
