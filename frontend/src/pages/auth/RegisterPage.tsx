@@ -4,6 +4,7 @@ import { Server, Mail, Lock, User, Phone, MapPin, FileText, Globe } from 'lucide
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
 import { APP_NAME } from '../../constants';
 import { useAuth } from '../../hooks';
+import { validateField } from '../../utils/validation';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,21 +16,29 @@ const RegisterPage: React.FC = () => {
   const [direccion, setDireccion] = useState('');
   const [documentoIdentidad, setDocumentoIdentidad] = useState('');
   const [region, setRegion] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
+
+  const handleBlur = (field: string, value: string, min?: number) => {
+    const err = validateField(field, value, min ? { min } : undefined);
+    setFieldErrors((prev) => ({ ...prev, [field]: err }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!nombre || !email || !contrasena || !documentoIdentidad) {
-      setError('Complete los campos obligatorios');
-      return;
-    }
+    const errors: Record<string, string> = {
+      nombre: validateField('nombre', nombre, { min: 2 }),
+      email: validateField('email', email),
+      documentoIdentidad: validateField('documentoIdentidad', documentoIdentidad),
+      contrasena: validateField('contrasena', contrasena),
+      telefono: validateField('telefono', telefono),
+    };
 
-    if (contrasena.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    setFieldErrors(errors);
+
+    if (Object.values(errors).some((e) => e)) return;
 
     try {
       const redirectPath = await register({
@@ -86,8 +95,10 @@ const RegisterPage: React.FC = () => {
                 type='text'
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+                onBlur={() => handleBlur('nombre', nombre, 2)}
                 placeholder='Juan Pérez'
                 leftIcon={<User className='w-5 h-5' />}
+                error={fieldErrors.nombre}
                 required
               />
 
@@ -97,8 +108,10 @@ const RegisterPage: React.FC = () => {
                 type='email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email', email)}
                 placeholder='email@ejemplo.com'
                 leftIcon={<Mail className='w-5 h-5' />}
+                error={fieldErrors.email}
                 required
               />
 
@@ -108,8 +121,10 @@ const RegisterPage: React.FC = () => {
                 type='password'
                 value={contrasena}
                 onChange={(e) => setContrasena(e.target.value)}
+                onBlur={() => handleBlur('contrasena', contrasena)}
                 placeholder='Mínimo 6 caracteres'
                 leftIcon={<Lock className='w-5 h-5' />}
+                error={fieldErrors.contrasena}
                 required
               />
 
@@ -119,8 +134,10 @@ const RegisterPage: React.FC = () => {
                 type='text'
                 value={documentoIdentidad}
                 onChange={(e) => setDocumentoIdentidad(e.target.value)}
-                placeholder='1-2345-6789'
+                onBlur={() => handleBlur('documentoIdentidad', documentoIdentidad)}
+                placeholder='123456789'
                 leftIcon={<FileText className='w-5 h-5' />}
+                error={fieldErrors.documentoIdentidad}
                 required
               />
 
@@ -130,8 +147,10 @@ const RegisterPage: React.FC = () => {
                 type='tel'
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
+                onBlur={() => handleBlur('telefono', telefono)}
                 placeholder='8888-0000'
                 leftIcon={<Phone className='w-5 h-5' />}
+                error={fieldErrors.telefono}
               />
 
               {/* Dirección */}
@@ -150,8 +169,10 @@ const RegisterPage: React.FC = () => {
                 type='text'
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
+                onBlur={() => handleBlur('region', region)}
                 placeholder='San José'
                 leftIcon={<Globe className='w-5 h-5' />}
+                error={fieldErrors.region}
               />
 
               {/* Error Message */}

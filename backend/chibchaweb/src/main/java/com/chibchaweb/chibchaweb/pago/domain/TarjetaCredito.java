@@ -10,12 +10,18 @@ public class TarjetaCredito {
     private String fechaVencimiento;
     private String cvv;
     private TipoTarjeta tipoTarjeta;
+    private Long clienteId;
 
     protected TarjetaCredito() {
     }
 
     public TarjetaCredito(Long id, String titular, String numero,
                           String fechaVencimiento, String cvv, TipoTarjeta tipoTarjeta) {
+        this(id, titular, numero, fechaVencimiento, cvv, tipoTarjeta, null);
+    }
+
+    public TarjetaCredito(Long id, String titular, String numero,
+                          String fechaVencimiento, String cvv, TipoTarjeta tipoTarjeta, Long clienteId) {
         if (titular == null || titular.isBlank()) {
             throw new IllegalArgumentException("El titular no puede estar vacio");
         }
@@ -37,6 +43,7 @@ public class TarjetaCredito {
         this.fechaVencimiento = fechaVencimiento.trim();
         this.cvv = cvv.trim();
         this.tipoTarjeta = tipoTarjeta;
+        this.clienteId = clienteId;
     }
 
     public Long getId() {
@@ -61,6 +68,10 @@ public class TarjetaCredito {
 
     public TipoTarjeta getTipoTarjeta() {
         return tipoTarjeta;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
     }
 
     @Override

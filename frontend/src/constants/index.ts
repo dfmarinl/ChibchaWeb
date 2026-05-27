@@ -22,6 +22,8 @@ export const ROUTES = {
     DOMAINS: '/client/domains',
     PAYMENTS: '/client/payments',
     SUPPORT: '/client/support',
+    PROFILE: '/client/profile',
+    CARDS: '/client/cards',
   },
   EMPLOYEE: {
     DASHBOARD: '/employee/dashboard',

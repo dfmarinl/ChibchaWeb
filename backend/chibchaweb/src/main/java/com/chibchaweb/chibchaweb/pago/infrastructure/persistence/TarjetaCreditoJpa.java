@@ -7,8 +7,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import com.chibchaweb.chibchaweb.pago.domain.TipoTarjeta;
+import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpa;
 
 @Entity
 @Table(name = "tarjeta_credito")
@@ -34,7 +37,11 @@ public class TarjetaCreditoJpa {
     @Column(name = "tipo_tarjeta", nullable = false)
     private TipoTarjeta tipoTarjeta;
 
-    protected TarjetaCreditoJpa() {
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private ClienteJpa cliente;
+
+    public TarjetaCreditoJpa() {
     }
 
     public Long getId() {
@@ -83,5 +90,13 @@ public class TarjetaCreditoJpa {
 
     public void setTipoTarjeta(TipoTarjeta tipoTarjeta) {
         this.tipoTarjeta = tipoTarjeta;
+    }
+
+    public ClienteJpa getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(ClienteJpa cliente) {
+        this.cliente = cliente;
     }
 }

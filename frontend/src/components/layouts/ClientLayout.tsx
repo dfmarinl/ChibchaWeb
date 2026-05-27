@@ -19,8 +19,10 @@ const ClientLayout: React.FC = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: ROUTES.CLIENT.DASHBOARD },
     { icon: Server, label: 'Planes', path: ROUTES.CLIENT.PLANS },
     { icon: Globe, label: 'Dominios', path: ROUTES.CLIENT.DOMAINS },
+    { icon: CreditCard, label: 'Tarjetas', path: ROUTES.CLIENT.CARDS },
     { icon: CreditCard, label: 'Pagos', path: ROUTES.CLIENT.PAYMENTS },
     { icon: HelpCircle, label: 'Soporte', path: ROUTES.CLIENT.SUPPORT },
+    { icon: User, label: 'Mi Perfil', path: ROUTES.CLIENT.PROFILE },
   ];
 
   const handleLogout = () => {
