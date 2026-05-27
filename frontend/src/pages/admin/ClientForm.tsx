@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { User, Mail, FileText, Phone, MapPin, Globe, Lock } from 'lucide-react';
 import { Input } from '../../components/ui';
 import { Client, CreateClientData, UpdateClientData } from '../../api/clients';
+import { validateField } from '../../utils/validation';
 
 interface ClientFormProps {
   initialData?: Client;
@@ -18,26 +19,33 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
   const [direccion, setDireccion] = useState(initialData?.direccion || '');
   const [contrasena, setContrasena] = useState('');
   const [region, setRegion] = useState(initialData?.region || '');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
+
+  const handleBlur = (field: string, value: string, min?: number) => {
+    const error = validateField(field, value, min ? { min } : undefined);
+    setFieldErrors((prev) => ({ ...prev, [field]: error }));
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!nombre.trim() || !email.trim() || !documentoIdentidad.trim()) {
-      setError('Nombre, email y documento de identidad son obligatorios');
-      return;
+    const errors: Record<string, string> = {
+      nombre: validateField('nombre', nombre, { min: 2 }),
+      email: validateField('email', email),
+      documentoIdentidad: validateField('documentoIdentidad', documentoIdentidad),
+      telefono: validateField('telefono', telefono),
+    };
+
+    if (!initialData) {
+      errors.contrasena = validateField('contrasena', contrasena);
     }
 
-    if (!initialData && !contrasena.trim()) {
-      setError('La contraseña es obligatoria para crear un cliente');
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!initialData && contrasena.trim().length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    const hasErrors = Object.values(errors).some((e) => e);
+    if (hasErrors) return;
 
     const data: Record<string, string | undefined> = {
       nombre: nombre.trim(),
@@ -61,8 +69,10 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         label='Nombre Completo'
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
+        onBlur={() => handleBlur('nombre', nombre, 2)}
         placeholder='Juan Pérez'
         leftIcon={<User className='w-5 h-5' />}
+        error={fieldErrors.nombre}
         required
       />
       <Input
@@ -70,16 +80,20 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         type='email'
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        onBlur={() => handleBlur('email', email)}
         placeholder='email@ejemplo.com'
         leftIcon={<Mail className='w-5 h-5' />}
+        error={fieldErrors.email}
         required
       />
       <Input
         label='Documento de Identidad'
         value={documentoIdentidad}
         onChange={(e) => setDocumentoIdentidad(e.target.value)}
-        placeholder='1-2345-6789'
+        onBlur={() => handleBlur('documentoIdentidad', documentoIdentidad)}
+        placeholder='123456789'
         leftIcon={<FileText className='w-5 h-5' />}
+        error={fieldErrors.documentoIdentidad}
         required
       />
       <Input
@@ -87,8 +101,10 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         type='tel'
         value={telefono}
         onChange={(e) => setTelefono(e.target.value)}
+        onBlur={() => handleBlur('telefono', telefono)}
         placeholder='8888-0000'
         leftIcon={<Phone className='w-5 h-5' />}
+        error={fieldErrors.telefono}
       />
       <Input
         label='Dirección'
@@ -101,8 +117,10 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         label='Región'
         value={region}
         onChange={(e) => setRegion(e.target.value)}
+        onBlur={() => handleBlur('region', region)}
         placeholder='San José'
         leftIcon={<Globe className='w-5 h-5' />}
+        error={fieldErrors.region}
       />
 
       {!initialData && (
@@ -111,8 +129,10 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
           type='password'
           value={contrasena}
           onChange={(e) => setContrasena(e.target.value)}
+          onBlur={() => handleBlur('contrasena', contrasena)}
           placeholder='Mínimo 6 caracteres'
           leftIcon={<Lock className='w-5 h-5' />}
+          error={fieldErrors.contrasena}
           required
         />
       )}

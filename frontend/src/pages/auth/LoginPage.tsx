@@ -4,6 +4,7 @@ import { Server, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
 import { APP_NAME } from '../../constants';
 import { useAuth } from '../../hooks';
+import { validators } from '../../utils/validation';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,16 +12,25 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
+
+  const handleBlur = (field: string, value: string) => {
+    const err = field === 'email' ? validators.email(value) : validators.required(value, 'La contraseña');
+    setFieldErrors((prev) => ({ ...prev, [field]: err }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
-      setError('Por favor complete todos los campos');
-      return;
-    }
+    const errors: Record<string, string> = {
+      email: validators.email(email),
+      password: validators.required(password, 'La contraseña'),
+    };
+
+    setFieldErrors(errors);
+    if (Object.values(errors).some((e) => e)) return;
 
     try {
       const redirectPath = await login(email, password);
@@ -58,8 +68,10 @@ const LoginPage: React.FC = () => {
                 type='email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email', email)}
                 placeholder='email@ejemplo.com'
                 leftIcon={<Mail className='w-5 h-5' />}
+                error={fieldErrors.email}
                 required
               />
 
@@ -70,8 +82,10 @@ const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => handleBlur('password', password)}
                   placeholder='••••••••'
                   leftIcon={<Lock className='w-5 h-5' />}
+                  error={fieldErrors.password}
                   required
                 />
                 <button

@@ -25,6 +25,8 @@ import {
   ClientDomains,
   ClientPayments,
   ClientSupport,
+  ClientProfile,
+  ClientCards,
 } from '../pages/client';
 
 // Employee Pages
@@ -107,6 +109,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.CLIENT.SUPPORT,
             element: <ClientSupport />,
+          },
+          {
+            path: ROUTES.CLIENT.PROFILE,
+            element: <ClientProfile />,
+          },
+          {
+            path: ROUTES.CLIENT.CARDS,
+            element: <ClientCards />,
           },
         ],
       },
