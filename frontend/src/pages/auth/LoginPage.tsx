@@ -1,17 +1,15 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Server, Mail, Lock, Shield, Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Select, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
-import { APP_NAME, USER_ROLES } from '../../constants';
+import { useNavigate, Link } from 'react-router-dom';
+import { Server, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
+import { APP_NAME } from '../../constants';
 import { useAuth } from '../../hooks';
-import { UserRole } from '../../constants';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>(USER_ROLES.CLIENT);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,29 +23,10 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      const redirectPath = await login(email, password, role);
+      const redirectPath = await login(email, password);
       navigate(redirectPath, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
-    }
-  };
-
-  const roles = [
-    { value: USER_ROLES.ADMIN, label: 'Administrador' },
-    { value: USER_ROLES.CLIENT, label: 'Cliente' },
-    { value: USER_ROLES.EMPLOYEE, label: 'Empleado' },
-  ];
-
-  const getEmailPlaceholder = () => {
-    switch (role) {
-      case USER_ROLES.ADMIN:
-        return 'admin@chibchaweb.com';
-      case USER_ROLES.CLIENT:
-        return 'cliente1@empresa.com';
-      case USER_ROLES.EMPLOYEE:
-        return 'empleado1@chibchaweb.com';
-      default:
-        return 'email@ejemplo.com';
     }
   };
 
@@ -73,27 +52,13 @@ const LoginPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className='space-y-5'>
-              {/* Role Selector */}
-              <Select
-                label='Seleccionar Rol'
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                leftIcon={<Shield className='w-5 h-5' />}
-              >
-                {roles.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
-
               {/* Email */}
               <Input
                 label='Correo Electrónico'
                 type='email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={getEmailPlaceholder()}
+                placeholder='email@ejemplo.com'
                 leftIcon={<Mail className='w-5 h-5' />}
                 required
               />
@@ -135,18 +100,15 @@ const LoginPage: React.FC = () => {
               >
                 Iniciar Sesión
               </Button>
-            </form>
 
-            {/* Demo Credentials Info */}
-            <div className='mt-6 pt-6 border-t border-secondary-200'>
-              <p className='text-xs text-secondary-600 mb-2 font-medium'>Credenciales de prueba:</p>
-              <div className='space-y-1 text-xs text-secondary-500'>
-                <p><span className='font-medium'>Admin:</span> admin@chibchaweb.com</p>
-                <p><span className='font-medium'>Cliente:</span> cliente1@empresa.com</p>
-                <p><span className='font-medium'>Empleado:</span> empleado1@chibchaweb.com</p>
-                <p className='mt-2 italic'>Cualquier contraseña es válida en modo demo</p>
-              </div>
-            </div>
+              {/* Link to Register */}
+              <p className='text-center text-sm text-secondary-600'>
+                ¿No tienes cuenta?{' '}
+                <Link to='/register' className='text-primary-600 hover:text-primary-700 font-medium'>
+                  Regístrate aquí
+                </Link>
+              </p>
+            </form>
           </CardContent>
         </Card>
 

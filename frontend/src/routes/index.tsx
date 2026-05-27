@@ -6,7 +6,7 @@ import PrivateRoute from './PrivateRoute';
 import { AdminLayout, ClientLayout, EmployeeLayout } from '../components/layouts';
 
 // Auth Pages
-import { LoginPage } from '../pages/auth';
+import { LoginPage, RegisterPage } from '../pages/auth';
 
 // Admin Pages
 import {
@@ -39,6 +39,10 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.PUBLIC.LOGIN,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTES.PUBLIC.REGISTER,
+    element: <RegisterPage />,
   },
 
   // Admin Routes
