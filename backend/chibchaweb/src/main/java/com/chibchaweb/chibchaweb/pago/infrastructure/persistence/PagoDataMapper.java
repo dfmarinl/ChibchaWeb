@@ -46,7 +46,7 @@ public class PagoDataMapper implements DataMapper<Pago, Long> {
                 .toList();
     }
 
-    private PagoJpa toJpa(Pago domain) {
+    public PagoJpa toJpa(Pago domain) {
         if (domain == null) return null;
         PagoJpa jpa = new PagoJpa();
         jpa.setId(domain.getId());
@@ -57,7 +57,7 @@ public class PagoDataMapper implements DataMapper<Pago, Long> {
         return jpa;
     }
 
-    private Pago toDomain(PagoJpa jpa) {
+    public Pago toDomain(PagoJpa jpa) {
         if (jpa == null) return null;
         return null;
     }

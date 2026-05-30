@@ -6,7 +6,6 @@ import java.util.Objects;
 public class CuentaAcceso {
 
     private Long id;
-    private Long usuarioId;
     private EstadoCuenta estado;
     private LocalDateTime fechaUltimoAcceso;
     private Rol rol;
@@ -15,10 +14,7 @@ public class CuentaAcceso {
     protected CuentaAcceso() {
     }
 
-    public CuentaAcceso(Long id, Long usuarioId, Rol rol, Credencial credencial) {
-        if (usuarioId == null) {
-            throw new IllegalArgumentException("El id de usuario no puede ser nulo");
-        }
+    public CuentaAcceso(Long id, Rol rol, Credencial credencial) {
         if (rol == null) {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
@@ -26,7 +22,6 @@ public class CuentaAcceso {
             throw new IllegalArgumentException("La credencial no puede ser nula");
         }
         this.id = id;
-        this.usuarioId = usuarioId;
         this.estado = EstadoCuenta.ACTIVA;
         this.fechaUltimoAcceso = null;
         this.rol = rol;
@@ -35,10 +30,6 @@ public class CuentaAcceso {
 
     public Long getId() {
         return id;
-    }
-
-    public Long getUsuarioId() {
-        return usuarioId;
     }
 
     public EstadoCuenta getEstado() {
@@ -142,7 +133,7 @@ public class CuentaAcceso {
 
     @Override
     public String toString() {
-        return "CuentaAcceso{id=" + id + ", usuarioId=" + usuarioId
+        return "CuentaAcceso{id=" + id
                 + ", estado=" + estado + ", rol=" + rol.getNombre() + "}";
     }
 

@@ -43,7 +43,7 @@ public class EmpleadoDataMapper implements DataMapper<Empleado, Long> {
                 .toList();
     }
 
-    private EmpleadoJpa toJpa(Empleado domain) {
+    public EmpleadoJpa toJpa(Empleado domain) {
         if (domain == null) return null;
         EmpleadoJpa jpa = new EmpleadoJpa();
         jpa.setId(domain.getId());
@@ -58,7 +58,7 @@ public class EmpleadoDataMapper implements DataMapper<Empleado, Long> {
         return jpa;
     }
 
-    private Empleado toDomain(EmpleadoJpa jpa) {
+    public Empleado toDomain(EmpleadoJpa jpa) {
         if (jpa == null) return null;
         return new Empleado(
             jpa.getId(),

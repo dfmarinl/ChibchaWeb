@@ -43,7 +43,7 @@ public class ComisionDataMapper implements DataMapper<Comision, Long> {
                 .toList();
     }
 
-    private ComisionJpa toJpa(Comision domain) {
+    public ComisionJpa toJpa(Comision domain) {
         if (domain == null) return null;
         ComisionJpa jpa = new ComisionJpa();
         jpa.setId(domain.getId());
@@ -53,7 +53,7 @@ public class ComisionDataMapper implements DataMapper<Comision, Long> {
         return jpa;
     }
 
-    private Comision toDomain(ComisionJpa jpa) {
+    public Comision toDomain(ComisionJpa jpa) {
         if (jpa == null) return null;
         return null;
     }

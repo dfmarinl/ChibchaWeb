@@ -1,8 +1,7 @@
-package com.chibchaweb.chibchaweb.pago.presentation;
+package com.chibchaweb.chibchaweb.dominio.presentation;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,56 +13,36 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.chibchaweb.chibchaweb.pago.application.TarjetaService;
-import com.chibchaweb.chibchaweb.pago.infrastructure.dto.TarjetaCreditoRequest;
-import com.chibchaweb.chibchaweb.pago.infrastructure.dto.TarjetaCreditoResponse;
-import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
-import com.chibchaweb.chibchaweb.pago.infrastructure.exception.NumeroTarjetaInvalidoException;
+import com.chibchaweb.chibchaweb.dominio.application.SitioWebService;
+import com.chibchaweb.chibchaweb.dominio.infrastructure.dto.SitioWebRequest;
+import com.chibchaweb.chibchaweb.dominio.infrastructure.dto.SitioWebResponse;
 import com.chibchaweb.chibchaweb.usuario.application.ClienteService;
 
 @RestController
-@RequestMapping("/api/tarjetas")
-public class TarjetaCreditoController {
+@RequestMapping("/api/sitios-web")
+public class SitioWebController {
 
-    private final TarjetaService service;
+    private final SitioWebService service;
     private final ClienteService clienteService;
 
-    public TarjetaCreditoController(TarjetaService service, ClienteService clienteService) {
+    public SitioWebController(SitioWebService service, ClienteService clienteService) {
         this.service = service;
         this.clienteService = clienteService;
     }
 
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<?> asociar(@Valid @RequestBody TarjetaCreditoRequest request) {
+    public ResponseEntity<SitioWebResponse> crear(@Valid @RequestBody SitioWebRequest request) {
         String email = (String) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         Long clienteId = clienteService.buscarPorEmail(email).id();
-        try {
-            TarjetaCreditoResponse response = service.asociar(clienteId, request);
-            return ResponseEntity.ok(Map.of(
-                "exitoso", true,
-                "mensaje", "Tarjeta asociada exitosamente",
-                "tarjeta", response
-            ));
-        } catch (IntentoLimiteExcedidoException e) {
-            return ResponseEntity.status(423).body(Map.of(
-                "exitoso", false,
-                "mensaje", e.getMessage(),
-                "limiteExcedido", true
-            ));
-        } catch (NumeroTarjetaInvalidoException e) {
-            return ResponseEntity.status(422).body(Map.of(
-                "exitoso", false,
-                "mensaje", e.getMessage(),
-                "intentosRestantes", e.getIntentosRestantes()
-            ));
-        }
+        SitioWebResponse response = service.crear(clienteId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<List<TarjetaCreditoResponse>> listar() {
+    public ResponseEntity<List<SitioWebResponse>> listar() {
         String email = (String) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         Long clienteId = clienteService.buscarPorEmail(email).id();

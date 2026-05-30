@@ -43,7 +43,7 @@ public class AdministradorDataMapper implements DataMapper<Administrador, Long> 
                 .toList();
     }
 
-    private AdministradorJpa toJpa(Administrador domain) {
+    public AdministradorJpa toJpa(Administrador domain) {
         if (domain == null) return null;
         AdministradorJpa jpa = new AdministradorJpa();
         jpa.setId(domain.getId());
@@ -55,7 +55,7 @@ public class AdministradorDataMapper implements DataMapper<Administrador, Long> 
         return jpa;
     }
 
-    private Administrador toDomain(AdministradorJpa jpa) {
+    public Administrador toDomain(AdministradorJpa jpa) {
         if (jpa == null) return null;
         return new Administrador(
             jpa.getId(),

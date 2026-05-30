@@ -6,30 +6,29 @@ import org.springframework.transaction.annotation.Transactional;
 import com.chibchaweb.chibchaweb.pago.domain.IntentoManager;
 import com.chibchaweb.chibchaweb.pago.domain.IntentoManager.ResultadoIntento;
 import com.chibchaweb.chibchaweb.pago.domain.LuhnValidator;
+import com.chibchaweb.chibchaweb.pago.domain.TarjetaCredito;
 import com.chibchaweb.chibchaweb.pago.domain.TipoTarjeta;
 import com.chibchaweb.chibchaweb.pago.infrastructure.dto.TarjetaCreditoRequest;
 import com.chibchaweb.chibchaweb.pago.infrastructure.dto.TarjetaCreditoResponse;
 import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
 import com.chibchaweb.chibchaweb.pago.infrastructure.exception.NumeroTarjetaInvalidoException;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.TarjetaCreditoDataMapper;
 import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.TarjetaCreditoJpa;
 import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.TarjetaCreditoJpaRepository;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.UsuarioNoEncontradoException;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpa;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpaRepository;
 
 @Service
 @Transactional
 public class TarjetaService {
 
-    private final TarjetaCreditoJpaRepository tarjetaRepo;
-    private final ClienteJpaRepository clienteRepo;
+    private final TarjetaCreditoDataMapper tarjetaMapper;
+    private final TarjetaCreditoJpaRepository tarjetaJpaRepository;
     private final IntentoManager intentoManager;
 
-    public TarjetaService(TarjetaCreditoJpaRepository tarjetaRepo,
-                          ClienteJpaRepository clienteRepo,
+    public TarjetaService(TarjetaCreditoDataMapper tarjetaMapper,
+                          TarjetaCreditoJpaRepository tarjetaJpaRepository,
                           IntentoManager intentoManager) {
-        this.tarjetaRepo = tarjetaRepo;
-        this.clienteRepo = clienteRepo;
+        this.tarjetaMapper = tarjetaMapper;
+        this.tarjetaJpaRepository = tarjetaJpaRepository;
         this.intentoManager = intentoManager;
     }
 
@@ -53,18 +52,10 @@ public class TarjetaService {
                 "Tipo de tarjeta no reconocido", resultado.intentosRestantes());
         }
 
-        ClienteJpa cliente = clienteRepo.findById(clienteId)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(clienteId));
+        TarjetaCredito tarjeta = new TarjetaCredito(null, request.titular().trim(), numero,
+                request.fechaVencimiento().trim(), request.cvv().trim(), tipo, clienteId);
 
-        TarjetaCreditoJpa jpa = new TarjetaCreditoJpa();
-        jpa.setTitular(request.titular().trim());
-        jpa.setNumero(numero);
-        jpa.setFechaVencimiento(request.fechaVencimiento().trim());
-        jpa.setCvv(request.cvv().trim());
-        jpa.setTipoTarjeta(tipo);
-        jpa.setCliente(cliente);
-
-        TarjetaCreditoJpa saved = tarjetaRepo.save(jpa);
+        var saved = tarjetaJpaRepository.save(tarjetaMapper.toJpa(tarjeta));
 
         intentoManager.resetear(clienteId);
 
@@ -73,18 +64,18 @@ public class TarjetaService {
 
     @Transactional(readOnly = true)
     public List<TarjetaCreditoResponse> listarPorCliente(Long clienteId) {
-        return tarjetaRepo.findByClienteId(clienteId).stream()
+        return tarjetaJpaRepository.findByClienteId(clienteId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public void eliminar(Long id, Long clienteId) {
-        TarjetaCreditoJpa jpa = tarjetaRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarjeta no encontrada"));
-        if (!jpa.getCliente().getId().equals(clienteId)) {
+        TarjetaCredito tarjeta = tarjetaMapper.findById(id);
+        if (tarjeta == null) throw new RuntimeException("Tarjeta no encontrada");
+        if (!tarjeta.getClienteId().equals(clienteId)) {
             throw new RuntimeException("La tarjeta no pertenece al cliente");
         }
-        tarjetaRepo.deleteById(id);
+        tarjetaMapper.delete(id);
     }
 
     private TarjetaCreditoResponse toResponse(TarjetaCreditoJpa jpa) {

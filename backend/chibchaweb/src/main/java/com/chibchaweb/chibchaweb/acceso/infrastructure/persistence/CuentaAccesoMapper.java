@@ -49,7 +49,6 @@ public class CuentaAccesoMapper implements DataMapper<CuentaAcceso, Long> {
         if (domain == null) return null;
         CuentaAccesoJpa jpa = new CuentaAccesoJpa();
         jpa.setId(domain.getId());
-        jpa.setUsuarioId(domain.getUsuarioId());
         jpa.setEstado(domain.getEstado());
         jpa.setFechaUltimoAcceso(domain.getFechaUltimoAcceso());
         jpa.setRol(rolMapper.toJpa(domain.getRol()));
@@ -61,7 +60,6 @@ public class CuentaAccesoMapper implements DataMapper<CuentaAcceso, Long> {
         if (jpa == null) return null;
         return new CuentaAcceso(
                 jpa.getId(),
-                jpa.getUsuarioId(),
                 rolMapper.toDomain(jpa.getRol()),
                 credencialMapper.toDomain(jpa.getCredencial()));
     }

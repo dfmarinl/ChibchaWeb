@@ -36,13 +36,13 @@ public class SitioWebJpa {
     private ClienteJpa propietario;
 
     @ManyToOne
-    @JoinColumn(name = "dominio_id", nullable = false)
+    @JoinColumn(name = "dominio_id")
     private DominioJpa dominio;
 
     @Column(name = "hosting_plan_id")
     private Long hostingPlanId;
 
-    protected SitioWebJpa() {
+    public SitioWebJpa() {
     }
 
     public Long getId() {

@@ -1,12 +1,12 @@
 package com.chibchaweb.chibchaweb.distribuidor.infrastructure.dto.request;
 
 import jakarta.validation.constraints.Email;
-import com.chibchaweb.chibchaweb.distribuidor.domain.NivelDistribuidor;
+import jakarta.validation.constraints.Min;
 
 public record ActualizarDistribuidorRequest(
         String nombre,
         @Email String email,
         String region,
         String codigoDistribuidor,
-        NivelDistribuidor nivelDistribuidor
+        @Min(0) Integer maxDominios
 ) {}

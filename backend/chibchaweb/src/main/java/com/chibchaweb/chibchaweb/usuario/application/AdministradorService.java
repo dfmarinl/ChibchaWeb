@@ -12,7 +12,7 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.Administrad
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.EmailDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.UsuarioNoEncontradoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.mapper.AdministradorDtoMapper;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.AdministradorJpa;
+import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.AdministradorDataMapper;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.AdministradorJpaRepository;
 
 @Service
@@ -20,81 +20,68 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.Administrado
 public class AdministradorService {
 
     private final UsuarioFactory factory;
-    private final AdministradorJpaRepository jpaRepository;
+    private final AdministradorDataMapper administradorMapper;
+    private final AdministradorJpaRepository administradorJpaRepository;
     private final AdministradorDtoMapper dtoMapper;
 
     public AdministradorService(UsuarioFactory factory,
-                                AdministradorJpaRepository jpaRepository,
+                                AdministradorDataMapper administradorMapper,
+                                AdministradorJpaRepository administradorJpaRepository,
                                 AdministradorDtoMapper dtoMapper) {
         this.factory = factory;
-        this.jpaRepository = jpaRepository;
+        this.administradorMapper = administradorMapper;
+        this.administradorJpaRepository = administradorJpaRepository;
         this.dtoMapper = dtoMapper;
     }
 
     public AdministradorResponse crear(CrearAdministradorRequest request) {
-        if (jpaRepository.findByEmail(request.email()).isPresent()) {
+        if (administradorJpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
         Administrador admin = factory.crearUsuario(NombreRol.ADMINISTRADOR, request);
-        AdministradorJpa jpa = toJpa(admin);
-        AdministradorJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+        var saved = administradorJpaRepository.save(administradorMapper.toJpa(admin));
+        return dtoMapper.toResponse(administradorMapper.toDomain(saved));
     }
 
     @Transactional(readOnly = true)
     public AdministradorResponse buscarPorId(Long id) {
-        AdministradorJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        return dtoMapper.toResponse(toDomain(jpa));
+        Administrador admin = administradorMapper.findById(id);
+        if (admin == null) throw UsuarioNoEncontradoException.porId(id);
+        return dtoMapper.toResponse(admin);
     }
 
     @Transactional(readOnly = true)
     public List<AdministradorResponse> listarTodos() {
-        return jpaRepository.findAll().stream()
-                .map(this::toDomain)
+        return administradorMapper.findAll().stream()
                 .map(dtoMapper::toResponse)
                 .toList();
     }
 
     public AdministradorResponse actualizar(Long id, ActualizarAdministradorRequest request) {
-        AdministradorJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        if (request.nombre() != null) jpa.setNombre(request.nombre().trim());
+        Administrador admin = administradorMapper.findById(id);
+        if (admin == null) throw UsuarioNoEncontradoException.porId(id);
+
         if (request.email() != null) {
-            jpaRepository.findByEmail(request.email())
+            administradorJpaRepository.findByEmail(request.email())
                     .filter(existing -> !existing.getId().equals(id))
                     .ifPresent(e -> { throw new EmailDuplicadoException(request.email()); });
-            jpa.setEmail(request.email().trim().toLowerCase());
         }
-        if (request.telefono() != null) jpa.setTelefono(request.telefono().trim());
-        if (request.nivelAcceso() != null) jpa.setNivelAcceso(request.nivelAcceso().trim().toUpperCase());
-        AdministradorJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+
+        Administrador merged = new Administrador(
+            id,
+            request.nombre() != null ? request.nombre().trim() : admin.getNombre(),
+            request.email() != null ? request.email().trim().toLowerCase() : admin.getEmail(),
+            request.telefono() != null ? request.telefono().trim() : admin.getTelefono(),
+            request.nivelAcceso() != null ? request.nivelAcceso().trim().toUpperCase() : admin.getNivelAcceso()
+        );
+        administradorMapper.update(merged);
+        Administrador actualizado = administradorMapper.findById(id);
+        return dtoMapper.toResponse(actualizado);
     }
 
     public void eliminar(Long id) {
-        if (!jpaRepository.existsById(id)) {
-            throw UsuarioNoEncontradoException.porId(id);
-        }
-        jpaRepository.deleteById(id);
-    }
-
-    private AdministradorJpa toJpa(Administrador domain) {
-        if (domain == null) return null;
-        AdministradorJpa jpa = new AdministradorJpa();
-        jpa.setId(domain.getId());
-        jpa.setNombre(domain.getNombre());
-        jpa.setEmail(domain.getEmail());
-        jpa.setTelefono(domain.getTelefono());
-        jpa.setFechaRegistro(domain.getFechaRegistro());
-        jpa.setNivelAcceso(domain.getNivelAcceso());
-        return jpa;
-    }
-
-    private Administrador toDomain(AdministradorJpa jpa) {
-        if (jpa == null) return null;
-        return new Administrador(
-                jpa.getId(), jpa.getNombre(), jpa.getEmail(), jpa.getTelefono(),
-                jpa.getNivelAcceso());
+        Administrador admin = administradorMapper.findById(id);
+        if (admin == null) throw UsuarioNoEncontradoException.porId(id);
+        administradorMapper.delete(id);
     }
 }

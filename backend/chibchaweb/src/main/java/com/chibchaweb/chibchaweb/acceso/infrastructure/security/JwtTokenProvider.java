@@ -22,14 +22,13 @@ public class JwtTokenProvider {
         this.expirationMs = expirationMs;
     }
 
-    public String generarToken(Long usuarioId, String rol, String email) {
+    public String generarToken(String email, String rol) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .subject(usuarioId.toString())
+                .subject(email)
                 .claim("rol", rol)
-                .claim("email", email)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
@@ -45,8 +44,8 @@ public class JwtTokenProvider {
         }
     }
 
-    public Long getUsuarioIdFromToken(String token) {
-        return Long.parseLong(getClaims(token).getSubject());
+    public String getEmailFromToken(String token) {
+        return getClaims(token).getSubject();
     }
 
     public String getRolFromToken(String token) {

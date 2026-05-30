@@ -54,9 +54,8 @@ public class AutenticacionService {
 
         Sesion sesion = sesionService.crearSesion(cuenta.getId());
         String token = jwtTokenProvider.generarToken(
-                cuenta.getUsuarioId(),
-                cuenta.getRol().getNombre().name(),
-                cuenta.getCredencial().getEmail());
+                cuenta.getCredencial().getEmail(),
+                cuenta.getRol().getNombre().name());
 
         return new LoginResultado(token, sesion.getId(), cuenta);
     }
@@ -64,13 +63,11 @@ public class AutenticacionService {
     public record LoginResultado(
             String token,
             Long sesionId,
-            Long usuarioId,
-            String nombre,
             String email,
             String rol
     ) {
         LoginResultado(String token, Long sesionId, CuentaAcceso cuenta) {
-            this(token, sesionId, cuenta.getUsuarioId(), null, cuenta.getCredencial().getEmail(), cuenta.getRol().getNombre().name());
+            this(token, sesionId, cuenta.getCredencial().getEmail(), cuenta.getRol().getNombre().name());
         }
     }
 }

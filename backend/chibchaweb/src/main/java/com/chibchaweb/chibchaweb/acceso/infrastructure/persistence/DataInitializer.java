@@ -78,7 +78,6 @@ public class DataInitializer {
         credencialRepo.save(credencialAdmin);
 
         CuentaAccesoJpa cuentaAdmin = new CuentaAccesoJpa();
-        cuentaAdmin.setUsuarioId(1L);
         cuentaAdmin.setEstado(com.chibchaweb.chibchaweb.acceso.domain.EstadoCuenta.ACTIVA);
         cuentaAdmin.setRol(rolAdmin);
         cuentaAdmin.setCredencial(credencialAdmin);

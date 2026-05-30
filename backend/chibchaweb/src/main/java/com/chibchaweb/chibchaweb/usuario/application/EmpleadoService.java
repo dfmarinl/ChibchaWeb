@@ -12,7 +12,7 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.EmpleadoRes
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.EmailDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.UsuarioNoEncontradoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.mapper.EmpleadoDtoMapper;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.EmpleadoJpa;
+import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.EmpleadoDataMapper;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.EmpleadoJpaRepository;
 
 @Service
@@ -20,85 +20,69 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.EmpleadoJpaR
 public class EmpleadoService {
 
     private final UsuarioFactory factory;
-    private final EmpleadoJpaRepository jpaRepository;
+    private final EmpleadoDataMapper empleadoMapper;
+    private final EmpleadoJpaRepository empleadoJpaRepository;
     private final EmpleadoDtoMapper dtoMapper;
 
-    public EmpleadoService(UsuarioFactory factory, EmpleadoJpaRepository jpaRepository,
+    public EmpleadoService(UsuarioFactory factory, EmpleadoDataMapper empleadoMapper,
+                           EmpleadoJpaRepository empleadoJpaRepository,
                            EmpleadoDtoMapper dtoMapper) {
         this.factory = factory;
-        this.jpaRepository = jpaRepository;
+        this.empleadoMapper = empleadoMapper;
+        this.empleadoJpaRepository = empleadoJpaRepository;
         this.dtoMapper = dtoMapper;
     }
 
     public EmpleadoResponse crear(CrearEmpleadoRequest request) {
-        if (jpaRepository.findByEmail(request.email()).isPresent()) {
+        if (empleadoJpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
         Empleado empleado = factory.crearUsuario(NombreRol.EMPLEADO, request);
-        EmpleadoJpa jpa = toJpa(empleado);
-        EmpleadoJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+        var saved = empleadoJpaRepository.save(empleadoMapper.toJpa(empleado));
+        return dtoMapper.toResponse(empleadoMapper.toDomain(saved));
     }
 
     @Transactional(readOnly = true)
     public EmpleadoResponse buscarPorId(Long id) {
-        EmpleadoJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        return dtoMapper.toResponse(toDomain(jpa));
+        Empleado empleado = empleadoMapper.findById(id);
+        if (empleado == null) throw UsuarioNoEncontradoException.porId(id);
+        return dtoMapper.toResponse(empleado);
     }
 
     @Transactional(readOnly = true)
     public List<EmpleadoResponse> listarTodos() {
-        return jpaRepository.findAll().stream()
-                .map(this::toDomain)
+        return empleadoMapper.findAll().stream()
                 .map(dtoMapper::toResponse)
                 .toList();
     }
 
     public EmpleadoResponse actualizar(Long id, ActualizarEmpleadoRequest request) {
-        EmpleadoJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        if (request.nombre() != null) jpa.setNombre(request.nombre().trim());
+        Empleado empleado = empleadoMapper.findById(id);
+        if (empleado == null) throw UsuarioNoEncontradoException.porId(id);
+
         if (request.email() != null) {
-            jpaRepository.findByEmail(request.email())
+            empleadoJpaRepository.findByEmail(request.email())
                     .filter(existing -> !existing.getId().equals(id))
                     .ifPresent(e -> { throw new EmailDuplicadoException(request.email()); });
-            jpa.setEmail(request.email().trim().toLowerCase());
         }
-        if (request.telefono() != null) jpa.setTelefono(request.telefono().trim());
-        if (request.cargo() != null) jpa.setCargo(request.cargo().trim());
-        if (request.departamento() != null) jpa.setDepartamento(request.departamento().trim());
-        if (request.salario() != null) jpa.setSalario(request.salario());
-        EmpleadoJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+
+        Empleado merged = new Empleado(
+            id,
+            request.nombre() != null ? request.nombre().trim() : empleado.getNombre(),
+            request.email() != null ? request.email().trim().toLowerCase() : empleado.getEmail(),
+            request.telefono() != null ? request.telefono().trim() : empleado.getTelefono(),
+            request.cargo() != null ? request.cargo().trim() : empleado.getCargo(),
+            request.departamento() != null ? request.departamento().trim() : empleado.getDepartamento(),
+            request.salario() != null ? request.salario() : empleado.getSalario()
+        );
+        empleadoMapper.update(merged);
+        Empleado actualizado = empleadoMapper.findById(id);
+        return dtoMapper.toResponse(actualizado);
     }
 
     public void eliminar(Long id) {
-        if (!jpaRepository.existsById(id)) {
-            throw UsuarioNoEncontradoException.porId(id);
-        }
-        jpaRepository.deleteById(id);
-    }
-
-    private EmpleadoJpa toJpa(Empleado domain) {
-        if (domain == null) return null;
-        EmpleadoJpa jpa = new EmpleadoJpa();
-        jpa.setId(domain.getId());
-        jpa.setNombre(domain.getNombre());
-        jpa.setEmail(domain.getEmail());
-        jpa.setTelefono(domain.getTelefono());
-        jpa.setFechaRegistro(domain.getFechaRegistro());
-        jpa.setCargo(domain.getCargo());
-        jpa.setDepartamento(domain.getDepartamento());
-        jpa.setSalario(domain.getSalario());
-        jpa.setFechaContratacion(domain.getFechaContratacion());
-        return jpa;
-    }
-
-    private Empleado toDomain(EmpleadoJpa jpa) {
-        if (jpa == null) return null;
-        return new Empleado(
-                jpa.getId(), jpa.getNombre(), jpa.getEmail(), jpa.getTelefono(),
-                jpa.getCargo(), jpa.getDepartamento(), jpa.getSalario());
+        Empleado empleado = empleadoMapper.findById(id);
+        if (empleado == null) throw UsuarioNoEncontradoException.porId(id);
+        empleadoMapper.delete(id);
     }
 }

@@ -34,7 +34,7 @@ public class CuentaAccesoService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public CuentaAcceso crearCuenta(Long usuarioId, String email, String rawPassword, NombreRol nombreRol) {
+    public CuentaAcceso crearCuenta(String email, String rawPassword, NombreRol nombreRol) {
         String hash = passwordEncoder.encode(rawPassword);
 
         CredencialJpa credencialJpa = new CredencialJpa();
@@ -47,7 +47,6 @@ public class CuentaAccesoService {
                 .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + nombreRol));
 
         CuentaAccesoJpa cuentaJpa = new CuentaAccesoJpa();
-        cuentaJpa.setUsuarioId(usuarioId);
         cuentaJpa.setEstado(EstadoCuenta.ACTIVA);
         cuentaJpa.setRol(rolJpa);
         cuentaJpa.setCredencial(credencialJpa);
@@ -55,6 +54,6 @@ public class CuentaAccesoService {
 
         Credencial credencial = new Credencial(credencialJpa.getId(), email, hash);
         Rol rol = new Rol(rolJpa.getId(), nombreRol);
-        return new CuentaAcceso(cuentaJpa.getId(), usuarioId, rol, credencial);
+        return new CuentaAcceso(cuentaJpa.getId(), rol, credencial);
     }
 }
