@@ -7,6 +7,7 @@ import {
   Package,
   Globe,
   CreditCard,
+  Store,
   Settings,
   LogOut,
   ChevronLeft,
@@ -36,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         { icon: Package, label: 'Planes', path: ROUTES.ADMIN.PLANS },
         { icon: Globe, label: 'Dominios', path: ROUTES.ADMIN.DOMAINS },
         { icon: CreditCard, label: 'Pagos', path: ROUTES.ADMIN.PAYMENTS },
+        { icon: Store, label: 'Distribuidores', path: ROUTES.ADMIN.DISTRIBUIDORES },
       ];
     } else if (role === USER_ROLES.EMPLOYEE) {
       return [

@@ -45,9 +45,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const userData: User = {
-        id: String(response.usuarioId),
+        id: email,
         email: response.email,
-        name: response.email.split('@')[0],
+        name: email.split('@')[0],
         role: mappedRole,
         createdAt: new Date().toISOString(),
         status: 'active',
@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const userData: User = {
-        id: String(response.usuarioId),
+        id: data.email,
         email: response.email,
         name: data.nombre,
         role: mappedRole,

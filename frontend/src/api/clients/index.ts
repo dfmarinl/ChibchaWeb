@@ -37,6 +37,11 @@ export const clientsApi = {
     return response.data;
   },
 
+  getMe: async (): Promise<Client> => {
+    const response = await apiClient.get<Client>('/clientes/me');
+    return response.data;
+  },
+
   getById: async (id: number): Promise<Client> => {
     const response = await apiClient.get<Client>(`/clientes/${id}`);
     return response.data;

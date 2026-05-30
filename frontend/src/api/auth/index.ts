@@ -18,7 +18,6 @@ export interface RegisterClienteData {
 export interface AuthResponse {
   token: string;
   sesionId: number;
-  usuarioId: number;
   email: string;
   rol: string;
 }

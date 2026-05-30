@@ -101,7 +101,7 @@ const PaymentsPage: React.FC = () => {
         <CardContent padding='none'>
           {payments.length === 0 ? (
             <EmptyState
-              message='No se encontraron pagos'
+              message='No hay pagos registrados'
               description='No hay pagos que coincidan con tu búsqueda.'
             />
           ) : (
