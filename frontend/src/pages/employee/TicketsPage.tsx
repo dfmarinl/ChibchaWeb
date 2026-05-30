@@ -141,7 +141,7 @@ const EmployeeTicketsPage: React.FC = () => {
         <CardContent padding='none'>
           {filteredTickets.length === 0 ? (
             <EmptyState
-              message='No se encontraron tickets'
+              message='No hay tickets registrados'
               description='No hay tickets que coincidan con los filtros seleccionados.'
             />
           ) : (

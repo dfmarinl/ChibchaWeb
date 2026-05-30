@@ -55,7 +55,7 @@ const EmployeesPage: React.FC = () => {
         <CardContent padding='none'>
           {employees.length === 0 ? (
             <EmptyState
-              message='No se encontraron empleados'
+              message='No hay empleados registrados'
               description='No hay empleados que coincidan con tu búsqueda.'
             />
           ) : (

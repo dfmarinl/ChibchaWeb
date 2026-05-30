@@ -141,7 +141,7 @@ const ClientsPage: React.FC = () => {
         <CardContent className='p-0'>
           {filtered.length === 0 ? (
             <EmptyState
-              message='No se encontraron clientes'
+              message='No hay clientes registrados'
               description='No hay clientes que coincidan con tu búsqueda.'
             />
           ) : (

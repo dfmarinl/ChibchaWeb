@@ -1,13 +1,11 @@
 package com.chibchaweb.chibchaweb.plan.infrastructure.persistence;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "plan_platino_windows")
-@PrimaryKeyJoinColumn(name = "plan_id")
+@DiscriminatorValue("PLATINO_WINDOWS")
 public class PlanPlatinoWindowsJpa extends PlanPlatinoJpa {
 
     @Column(name = "sql_server_incluido")

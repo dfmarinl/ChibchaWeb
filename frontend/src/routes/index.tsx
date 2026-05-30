@@ -5,6 +5,9 @@ import PrivateRoute from './PrivateRoute';
 // Layouts
 import { AdminLayout, ClientLayout, EmployeeLayout } from '../components/layouts';
 
+// Public Pages
+import { LandingPage } from '../pages/public';
+
 // Auth Pages
 import { LoginPage, RegisterPage } from '../pages/auth';
 
@@ -16,6 +19,7 @@ import {
   PlansPage,
   DomainsPage,
   PaymentsPage,
+  DistribuidoresPage,
 } from '../pages/admin';
 
 // Client Pages
@@ -26,7 +30,6 @@ import {
   ClientPayments,
   ClientSupport,
   ClientProfile,
-  ClientCards,
 } from '../pages/client';
 
 // Employee Pages
@@ -35,8 +38,8 @@ import { EmployeeDashboard, EmployeeTickets } from '../pages/employee';
 export const router = createBrowserRouter([
   // Public Routes
   {
-    path: '/',
-    element: <Navigate to={ROUTES.PUBLIC.LOGIN} replace />,
+    path: ROUTES.PUBLIC.LANDING,
+    element: <LandingPage />,
   },
   {
     path: ROUTES.PUBLIC.LOGIN,
@@ -78,6 +81,10 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.PAYMENTS,
             element: <PaymentsPage />,
           },
+          {
+            path: ROUTES.ADMIN.DISTRIBUIDORES,
+            element: <DistribuidoresPage />,
+          },
         ],
       },
     ],
@@ -113,10 +120,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.CLIENT.PROFILE,
             element: <ClientProfile />,
-          },
-          {
-            path: ROUTES.CLIENT.CARDS,
-            element: <ClientCards />,
           },
         ],
       },

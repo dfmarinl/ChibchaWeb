@@ -4,6 +4,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:80
 
 export const ROUTES = {
   PUBLIC: {
+    LANDING: '/',
     LOGIN: '/login',
     REGISTER: '/register',
     ROLE_SELECTOR: '/select-role',
@@ -15,6 +16,7 @@ export const ROUTES = {
     PLANS: '/admin/plans',
     DOMAINS: '/admin/domains',
     PAYMENTS: '/admin/payments',
+    DISTRIBUIDORES: '/admin/distribuidores',
   },
   CLIENT: {
     DASHBOARD: '/client/dashboard',

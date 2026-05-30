@@ -65,7 +65,7 @@ const DomainsPage: React.FC = () => {
         <CardContent padding='none'>
           {domains.length === 0 ? (
             <EmptyState
-              message='No se encontraron dominios'
+              message='No hay dominios registrados'
               description='No hay dominios que coincidan con tu búsqueda.'
             />
           ) : (
