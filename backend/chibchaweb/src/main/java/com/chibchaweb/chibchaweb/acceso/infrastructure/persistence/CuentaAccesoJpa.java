@@ -22,9 +22,6 @@ public class CuentaAccesoJpa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario_id", nullable = false)
-    private Long usuarioId;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoCuenta estado;
@@ -49,14 +46,6 @@ public class CuentaAccesoJpa {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
     }
 
     public EstadoCuenta getEstado() {

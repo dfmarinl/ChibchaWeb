@@ -3,7 +3,6 @@ package com.chibchaweb.chibchaweb.distribuidor.infrastructure.persistence;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import com.chibchaweb.chibchaweb.distribuidor.domain.Distribuidor;
-import com.chibchaweb.chibchaweb.distribuidor.domain.NivelDistribuidor;
 import com.chibchaweb.chibchaweb.shared.domain.DataMapper;
 
 @Component
@@ -44,7 +43,7 @@ public class DistribuidorDataMapper implements DataMapper<Distribuidor, Long> {
                 .toList();
     }
 
-    private DistribuidorJpa toJpa(Distribuidor domain) {
+    public DistribuidorJpa toJpa(Distribuidor domain) {
         if (domain == null) return null;
         DistribuidorJpa jpa = new DistribuidorJpa();
         jpa.setId(domain.getId());
@@ -52,13 +51,12 @@ public class DistribuidorDataMapper implements DataMapper<Distribuidor, Long> {
         jpa.setEmail(domain.getEmail());
         jpa.setRegion(domain.getRegion());
         jpa.setCodigoDistribuidor(domain.getCodigoDistribuidor());
-        jpa.setNivelDistribuidor(domain.getNivelDistribuidor() != null
-                ? domain.getNivelDistribuidor()
-                : NivelDistribuidor.BASICO);
+        jpa.setMaxDominios(domain.getMaxDominios());
+        jpa.setNivelDistribuidor(domain.getNivelDistribuidor());
         return jpa;
     }
 
-    private Distribuidor toDomain(DistribuidorJpa jpa) {
+    public Distribuidor toDomain(DistribuidorJpa jpa) {
         if (jpa == null) return null;
         return new Distribuidor(
                 jpa.getId(),
@@ -66,6 +64,6 @@ public class DistribuidorDataMapper implements DataMapper<Distribuidor, Long> {
                 jpa.getEmail(),
                 jpa.getRegion(),
                 jpa.getCodigoDistribuidor(),
-                jpa.getNivelDistribuidor());
+                jpa.getMaxDominios());
     }
 }

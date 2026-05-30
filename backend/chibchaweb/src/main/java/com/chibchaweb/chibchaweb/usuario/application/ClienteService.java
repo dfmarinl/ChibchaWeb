@@ -9,11 +9,10 @@ import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.CrearClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.ClienteResponse;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.DocumentoDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.EmailDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.UsuarioNoEncontradoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.mapper.ClienteDtoMapper;
-import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpa;
+import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteDataMapper;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpaRepository;
 
 @Service
@@ -21,85 +20,76 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpaRe
 public class ClienteService {
 
     private final UsuarioFactory factory;
-    private final ClienteJpaRepository jpaRepository;
+    private final ClienteDataMapper clienteMapper;
+    private final ClienteJpaRepository clienteJpaRepository;
     private final ClienteDtoMapper dtoMapper;
 
-    public ClienteService(UsuarioFactory factory, ClienteJpaRepository jpaRepository,
+    public ClienteService(UsuarioFactory factory, ClienteDataMapper clienteMapper,
+                          ClienteJpaRepository clienteJpaRepository,
                           ClienteDtoMapper dtoMapper) {
         this.factory = factory;
-        this.jpaRepository = jpaRepository;
+        this.clienteMapper = clienteMapper;
+        this.clienteJpaRepository = clienteJpaRepository;
         this.dtoMapper = dtoMapper;
     }
 
     public ClienteResponse crear(CrearClienteRequest request) {
-        if (jpaRepository.findByEmail(request.email()).isPresent()) {
+        if (clienteJpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
         Cliente cliente = factory.crearUsuario(NombreRol.CLIENTE, request);
-        ClienteJpa jpa = toJpa(cliente);
-        ClienteJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+        var saved = clienteJpaRepository.save(clienteMapper.toJpa(cliente));
+        return dtoMapper.toResponse(clienteMapper.toDomain(saved));
     }
 
     @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(Long id) {
-        ClienteJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        return dtoMapper.toResponse(toDomain(jpa));
+        Cliente cliente = clienteMapper.findById(id);
+        if (cliente == null) throw UsuarioNoEncontradoException.porId(id);
+        return dtoMapper.toResponse(cliente);
+    }
+
+    @Transactional(readOnly = true)
+    public ClienteResponse buscarPorEmail(String email) {
+        var jpa = clienteJpaRepository.findByEmail(email)
+                .orElseThrow(() -> UsuarioNoEncontradoException.porEmail(email));
+        return dtoMapper.toResponse(clienteMapper.toDomain(jpa));
     }
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listarTodos() {
-        return jpaRepository.findAll().stream()
-                .map(this::toDomain)
+        return clienteMapper.findAll().stream()
                 .map(dtoMapper::toResponse)
                 .toList();
     }
 
     public ClienteResponse actualizar(Long id, ActualizarClienteRequest request) {
-        ClienteJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> UsuarioNoEncontradoException.porId(id));
-        if (request.nombre() != null) jpa.setNombre(request.nombre().trim());
+        Cliente cliente = clienteMapper.findById(id);
+        if (cliente == null) throw UsuarioNoEncontradoException.porId(id);
+
         if (request.email() != null) {
-            jpaRepository.findByEmail(request.email())
+            clienteJpaRepository.findByEmail(request.email())
                     .filter(existing -> !existing.getId().equals(id))
                     .ifPresent(e -> { throw new EmailDuplicadoException(request.email()); });
-            jpa.setEmail(request.email().trim().toLowerCase());
         }
-        if (request.telefono() != null) jpa.setTelefono(request.telefono().trim());
-        if (request.direccion() != null) jpa.setDireccion(request.direccion().trim());
-        if (request.documentoIdentidad() != null) jpa.setDocumentoIdentidad(request.documentoIdentidad().trim());
-        if (request.region() != null) jpa.setRegion(request.region().trim());
-        ClienteJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+
+        Cliente merged = new Cliente(
+            id,
+            request.nombre() != null ? request.nombre().trim() : cliente.getNombre(),
+            request.email() != null ? request.email().trim().toLowerCase() : cliente.getEmail(),
+            request.telefono() != null ? request.telefono().trim() : cliente.getTelefono(),
+            request.direccion() != null ? request.direccion().trim() : cliente.getDireccion(),
+            request.documentoIdentidad() != null ? request.documentoIdentidad().trim() : cliente.getDocumentoIdentidad(),
+            request.region() != null ? request.region().trim() : cliente.getRegion()
+        );
+        clienteMapper.update(merged);
+        Cliente actualizado = clienteMapper.findById(id);
+        return dtoMapper.toResponse(actualizado);
     }
 
     public void eliminar(Long id) {
-        if (!jpaRepository.existsById(id)) {
-            throw UsuarioNoEncontradoException.porId(id);
-        }
-        jpaRepository.deleteById(id);
-    }
-
-    private ClienteJpa toJpa(Cliente domain) {
-        if (domain == null) return null;
-        ClienteJpa jpa = new ClienteJpa();
-        jpa.setId(domain.getId());
-        jpa.setNombre(domain.getNombre());
-        jpa.setEmail(domain.getEmail());
-        jpa.setTelefono(domain.getTelefono());
-        jpa.setFechaRegistro(domain.getFechaRegistro());
-        jpa.setDireccion(domain.getDireccion());
-        jpa.setDocumentoIdentidad(domain.getDocumentoIdentidad());
-        jpa.setRegion(domain.getRegion());
-        jpa.setLimitesSitios(domain.getLimitesSitios());
-        return jpa;
-    }
-
-    private Cliente toDomain(ClienteJpa jpa) {
-        if (jpa == null) return null;
-        return new Cliente(
-                jpa.getId(), jpa.getNombre(), jpa.getEmail(), jpa.getTelefono(),
-                jpa.getDireccion(), jpa.getDocumentoIdentidad(), jpa.getRegion());
+        Cliente cliente = clienteMapper.findById(id);
+        if (cliente == null) throw UsuarioNoEncontradoException.porId(id);
+        clienteMapper.delete(id);
     }
 }

@@ -43,7 +43,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
                 .toList();
     }
 
-    HostingPlanJpa toJpa(HostingPlan domain) {
+    public HostingPlanJpa toJpa(HostingPlan domain) {
         if (domain == null) return null;
         HostingPlanJpa jpa = new HostingPlanJpa() {};
         jpa.setId(domain.getId());
@@ -55,7 +55,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
         return jpa;
     }
 
-    private HostingPlan toDomain(HostingPlanJpa jpa) {
+    public HostingPlan toDomain(HostingPlanJpa jpa) {
         if (jpa == null) return null;
         return null;
     }

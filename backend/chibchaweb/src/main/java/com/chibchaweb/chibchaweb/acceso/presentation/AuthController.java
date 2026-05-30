@@ -38,7 +38,6 @@ public class AuthController {
         LoginResponse response = new LoginResponse(
                 resultado.token(),
                 resultado.sesionId(),
-                resultado.usuarioId(),
                 resultado.email(),
                 resultado.rol());
 

@@ -49,32 +49,32 @@ public class RegistroService {
         CrearClienteRequest crearReq = new CrearClienteRequest(
                 request.nombre(), request.email(), request.telefono(),
                 request.direccion(), request.documentoIdentidad(), request.region());
-        ClienteResponse usuario = clienteService.crear(crearReq);
-        return registrar(usuario.id(), request.email(), request.contrasena(), NombreRol.CLIENTE);
+        clienteService.crear(crearReq);
+        return registrar(request.email(), request.contrasena(), NombreRol.CLIENTE);
     }
 
     public LoginResponse registrarEmpleado(RegistroEmpleadoRequest request) {
         CrearEmpleadoRequest crearReq = new CrearEmpleadoRequest(
                 request.nombre(), request.email(), request.telefono(),
                 request.cargo(), request.departamento(), request.salario());
-        EmpleadoResponse usuario = empleadoService.crear(crearReq);
-        return registrar(usuario.id(), request.email(), request.contrasena(), NombreRol.EMPLEADO);
+        empleadoService.crear(crearReq);
+        return registrar(request.email(), request.contrasena(), NombreRol.EMPLEADO);
     }
 
     public LoginResponse registrarAdministrador(RegistroAdministradorRequest request) {
         CrearAdministradorRequest crearReq = new CrearAdministradorRequest(
                 request.nombre(), request.email(), request.telefono(),
                 request.nivelAcceso());
-        AdministradorResponse usuario = administradorService.crear(crearReq);
-        return registrar(usuario.id(), request.email(), request.contrasena(), NombreRol.ADMINISTRADOR);
+        administradorService.crear(crearReq);
+        return registrar(request.email(), request.contrasena(), NombreRol.ADMINISTRADOR);
     }
 
-    private LoginResponse registrar(Long usuarioId, String email, String contrasena, NombreRol rol) {
-        CuentaAcceso cuenta = cuentaAccesoService.crearCuenta(usuarioId, email, contrasena, rol);
+    private LoginResponse registrar(String email, String contrasena, NombreRol rol) {
+        CuentaAcceso cuenta = cuentaAccesoService.crearCuenta(email, contrasena, rol);
         Sesion sesion = sesionService.crearSesion(cuenta.getId());
         String token = jwtTokenProvider.generarToken(
-                cuenta.getUsuarioId(), cuenta.getRol().getNombre().name(), cuenta.getCredencial().getEmail());
-        return new LoginResponse(token, sesion.getId(), cuenta.getUsuarioId(),
+                cuenta.getCredencial().getEmail(), cuenta.getRol().getNombre().name());
+        return new LoginResponse(token, sesion.getId(),
                 cuenta.getCredencial().getEmail(), cuenta.getRol().getNombre().name());
     }
 }

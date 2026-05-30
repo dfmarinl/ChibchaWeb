@@ -20,18 +20,19 @@ public class SitioWeb {
     }
 
     public SitioWeb(Long id, String urlSitio, Cliente propietario, Dominio dominio) {
+        this(id, urlSitio, propietario);
+        this.dominio = dominio;
+    }
+
+    public SitioWeb(Long id, String urlSitio, Cliente propietario) {
         validarUrl(urlSitio);
         if (propietario == null) {
             throw new IllegalArgumentException("El propietario no puede ser nulo");
         }
-        if (dominio == null) {
-            throw new IllegalArgumentException("El dominio no puede ser nulo");
-        }
         this.id = id;
         this.urlSitio = urlSitio.trim().toLowerCase();
         this.propietario = propietario;
-        this.dominio = dominio;
-        this.estadoActivo = true;
+        this.estadoActivo = false;
         this.espacioUsado = 0.0;
         this.fechaCreacion = LocalDateTime.now();
     }

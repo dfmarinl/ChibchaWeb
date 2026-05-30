@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.chibchaweb.chibchaweb.usuario.application.ClienteService;
@@ -32,6 +33,14 @@ public class ClienteController {
     public ResponseEntity<ClienteResponse> crear(@Valid @RequestBody CrearClienteRequest request) {
         ClienteResponse response = service.crear(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ClienteResponse> perfilActual() {
+        String email = (String) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return ResponseEntity.ok(service.buscarPorEmail(email));
     }
 
     @GetMapping("/{id}")

@@ -29,6 +29,9 @@ public class DistribuidorJpa {
     @Column(name = "codigo_distribuidor", nullable = false, unique = true)
     private String codigoDistribuidor;
 
+    @Column(name = "max_dominios", nullable = false, columnDefinition = "integer default 0 not null")
+    private int maxDominios;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "nivel_distribuidor", nullable = false)
     private NivelDistribuidor nivelDistribuidor;
@@ -74,6 +77,14 @@ public class DistribuidorJpa {
 
     public void setCodigoDistribuidor(String codigoDistribuidor) {
         this.codigoDistribuidor = codigoDistribuidor;
+    }
+
+    public int getMaxDominios() {
+        return maxDominios;
+    }
+
+    public void setMaxDominios(int maxDominios) {
+        this.maxDominios = maxDominios;
     }
 
     public NivelDistribuidor getNivelDistribuidor() {

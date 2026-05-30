@@ -50,7 +50,7 @@ public class SitioWebDataMapper implements DataMapper<SitioWeb, Long> {
                 .toList();
     }
 
-    private SitioWebJpa toJpa(SitioWeb domain) {
+    public SitioWebJpa toJpa(SitioWeb domain) {
         if (domain == null) return null;
         SitioWebJpa jpa = new SitioWebJpa();
         jpa.setId(domain.getId());
@@ -58,17 +58,30 @@ public class SitioWebDataMapper implements DataMapper<SitioWeb, Long> {
         jpa.setEspacioUsado(domain.getEspacioUsado());
         jpa.setEstadoActivo(domain.isEstadoActivo());
         jpa.setFechaCreacion(domain.getFechaCreacion());
+        if (domain.getPropietario() != null) {
+            jpa.setPropietario(clienteMapper.toJpa(domain.getPropietario()));
+        }
+        if (domain.getDominio() != null) {
+            jpa.setDominio(dominioMapper.toJpa(domain.getDominio()));
+        }
         return jpa;
     }
 
-    private SitioWeb toDomain(SitioWebJpa jpa) {
+    public SitioWeb toDomain(SitioWebJpa jpa) {
         if (jpa == null) return null;
         SitioWeb sitioWeb = new SitioWeb(
             jpa.getId(),
             jpa.getUrlSitio(),
-            clienteMapper.toDomain(jpa.getPropietario()),
-            dominioMapper.toDomain(jpa.getDominio())
+            clienteMapper.toDomain(jpa.getPropietario())
         );
+        if (jpa.getDominio() != null) {
+            sitioWeb = new SitioWeb(
+                jpa.getId(),
+                jpa.getUrlSitio(),
+                clienteMapper.toDomain(jpa.getPropietario()),
+                dominioMapper.toDomain(jpa.getDominio())
+            );
+        }
         return sitioWeb;
     }
 }

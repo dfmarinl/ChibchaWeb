@@ -8,5 +8,6 @@ public record DistribuidorResponse(
         String email,
         String region,
         String codigoDistribuidor,
+        int maxDominios,
         NivelDistribuidor nivelDistribuidor
 ) {}

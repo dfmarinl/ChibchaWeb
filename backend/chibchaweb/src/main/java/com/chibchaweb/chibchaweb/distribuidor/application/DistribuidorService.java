@@ -10,90 +10,74 @@ import com.chibchaweb.chibchaweb.distribuidor.infrastructure.dto.response.Distri
 import com.chibchaweb.chibchaweb.distribuidor.infrastructure.exception.EmailDuplicadoException;
 import com.chibchaweb.chibchaweb.distribuidor.infrastructure.exception.DistribuidorNoEncontradoException;
 import com.chibchaweb.chibchaweb.distribuidor.infrastructure.mapper.DistribuidorDtoMapper;
-import com.chibchaweb.chibchaweb.distribuidor.infrastructure.persistence.DistribuidorJpa;
+import com.chibchaweb.chibchaweb.distribuidor.infrastructure.persistence.DistribuidorDataMapper;
 import com.chibchaweb.chibchaweb.distribuidor.infrastructure.persistence.DistribuidorJpaRepository;
 
 @Service
 @Transactional
 public class DistribuidorService {
 
-    private final DistribuidorJpaRepository jpaRepository;
+    private final DistribuidorDataMapper distribuidorMapper;
+    private final DistribuidorJpaRepository distribuidorJpaRepository;
     private final DistribuidorDtoMapper dtoMapper;
 
-    public DistribuidorService(DistribuidorJpaRepository jpaRepository,
+    public DistribuidorService(DistribuidorDataMapper distribuidorMapper,
+                               DistribuidorJpaRepository distribuidorJpaRepository,
                                DistribuidorDtoMapper dtoMapper) {
-        this.jpaRepository = jpaRepository;
+        this.distribuidorMapper = distribuidorMapper;
+        this.distribuidorJpaRepository = distribuidorJpaRepository;
         this.dtoMapper = dtoMapper;
     }
 
     public DistribuidorResponse crear(CrearDistribuidorRequest request) {
-        if (jpaRepository.findByEmail(request.email()).isPresent()) {
+        if (distribuidorJpaRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailDuplicadoException(request.email());
         }
         Distribuidor distribuidor = new Distribuidor(null, request.nombre(), request.email(),
-                request.region(), request.codigoDistribuidor(), request.nivelDistribuidor());
-        DistribuidorJpa jpa = toJpa(distribuidor);
-        DistribuidorJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+                request.region(), request.codigoDistribuidor(), request.maxDominios());
+        var saved = distribuidorJpaRepository.save(distribuidorMapper.toJpa(distribuidor));
+        return dtoMapper.toResponse(distribuidorMapper.toDomain(saved));
     }
 
     @Transactional(readOnly = true)
     public DistribuidorResponse buscarPorId(Long id) {
-        DistribuidorJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> DistribuidorNoEncontradoException.porId(id));
-        return dtoMapper.toResponse(toDomain(jpa));
+        Distribuidor distribuidor = distribuidorMapper.findById(id);
+        if (distribuidor == null) throw DistribuidorNoEncontradoException.porId(id);
+        return dtoMapper.toResponse(distribuidor);
     }
 
     @Transactional(readOnly = true)
     public List<DistribuidorResponse> listarTodos() {
-        return jpaRepository.findAll().stream()
-                .map(this::toDomain)
+        return distribuidorMapper.findAll().stream()
                 .map(dtoMapper::toResponse)
                 .toList();
     }
 
     public DistribuidorResponse actualizar(Long id, ActualizarDistribuidorRequest request) {
-        DistribuidorJpa jpa = jpaRepository.findById(id)
-                .orElseThrow(() -> DistribuidorNoEncontradoException.porId(id));
-        if (request.nombre() != null) jpa.setNombre(request.nombre().trim());
+        Distribuidor distribuidor = distribuidorMapper.findById(id);
+        if (distribuidor == null) throw DistribuidorNoEncontradoException.porId(id);
+
         if (request.email() != null) {
-            jpaRepository.findByEmail(request.email())
+            distribuidorJpaRepository.findByEmail(request.email())
                     .filter(existing -> !existing.getId().equals(id))
                     .ifPresent(e -> { throw new EmailDuplicadoException(request.email()); });
-            jpa.setEmail(request.email().trim().toLowerCase());
         }
-        if (request.region() != null) jpa.setRegion(request.region().trim());
-        if (request.codigoDistribuidor() != null) jpa.setCodigoDistribuidor(request.codigoDistribuidor().trim());
-        if (request.nivelDistribuidor() != null) jpa.setNivelDistribuidor(request.nivelDistribuidor());
-        DistribuidorJpa saved = jpaRepository.save(jpa);
-        return dtoMapper.toResponse(toDomain(saved));
+
+        String nombre = request.nombre() != null ? request.nombre().trim() : distribuidor.getNombre();
+        String email = request.email() != null ? request.email().trim().toLowerCase() : distribuidor.getEmail();
+        String region = request.region() != null ? request.region().trim() : distribuidor.getRegion();
+        String codigo = request.codigoDistribuidor() != null ? request.codigoDistribuidor().trim() : distribuidor.getCodigoDistribuidor();
+        int maxDominios = request.maxDominios() != null ? request.maxDominios() : distribuidor.getMaxDominios();
+
+        Distribuidor merged = new Distribuidor(id, nombre, email, region, codigo, maxDominios);
+        distribuidorMapper.update(merged);
+        Distribuidor actualizado = distribuidorMapper.findById(id);
+        return dtoMapper.toResponse(actualizado);
     }
 
     public void eliminar(Long id) {
-        if (!jpaRepository.existsById(id)) {
-            throw DistribuidorNoEncontradoException.porId(id);
-        }
-        jpaRepository.deleteById(id);
-    }
-
-    private DistribuidorJpa toJpa(Distribuidor domain) {
-        if (domain == null) return null;
-        DistribuidorJpa jpa = new DistribuidorJpa();
-        jpa.setId(domain.getId());
-        jpa.setNombre(domain.getNombre());
-        jpa.setEmail(domain.getEmail());
-        jpa.setRegion(domain.getRegion());
-        jpa.setCodigoDistribuidor(domain.getCodigoDistribuidor());
-        jpa.setNivelDistribuidor(domain.getNivelDistribuidor() != null
-                ? domain.getNivelDistribuidor()
-                : com.chibchaweb.chibchaweb.distribuidor.domain.NivelDistribuidor.BASICO);
-        return jpa;
-    }
-
-    private Distribuidor toDomain(DistribuidorJpa jpa) {
-        if (jpa == null) return null;
-        return new Distribuidor(
-                jpa.getId(), jpa.getNombre(), jpa.getEmail(), jpa.getRegion(),
-                jpa.getCodigoDistribuidor(), jpa.getNivelDistribuidor());
+        Distribuidor distribuidor = distribuidorMapper.findById(id);
+        if (distribuidor == null) throw DistribuidorNoEncontradoException.porId(id);
+        distribuidorMapper.delete(id);
     }
 }

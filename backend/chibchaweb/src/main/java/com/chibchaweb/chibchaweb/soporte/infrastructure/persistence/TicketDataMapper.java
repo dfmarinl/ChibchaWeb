@@ -46,7 +46,7 @@ public class TicketDataMapper implements DataMapper<Ticket, Long> {
                 .toList();
     }
 
-    private TicketJpa toJpa(Ticket domain) {
+    public TicketJpa toJpa(Ticket domain) {
         if (domain == null) return null;
         TicketJpa jpa = new TicketJpa();
         jpa.setId(domain.getId());
@@ -61,7 +61,7 @@ public class TicketDataMapper implements DataMapper<Ticket, Long> {
         return jpa;
     }
 
-    private Ticket toDomain(TicketJpa jpa) {
+    public Ticket toDomain(TicketJpa jpa) {
         if (jpa == null) return null;
         return null;
     }

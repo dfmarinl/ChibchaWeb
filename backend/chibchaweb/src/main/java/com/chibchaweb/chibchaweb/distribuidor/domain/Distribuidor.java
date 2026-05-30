@@ -14,6 +14,7 @@ public class Distribuidor {
     private String email;
     private String region;
     private String codigoDistribuidor;
+    private int maxDominios;
     private NivelDistribuidor nivelDistribuidor;
     private Comision comision;
     private List<Cliente> clientes;
@@ -22,7 +23,7 @@ public class Distribuidor {
     }
 
     public Distribuidor(Long id, String nombre, String email, String region,
-                        String codigoDistribuidor, NivelDistribuidor nivelDistribuidor) {
+                        String codigoDistribuidor, int maxDominios) {
         validarNombre(nombre);
         validarEmail(email);
         this.id = id;
@@ -30,7 +31,8 @@ public class Distribuidor {
         this.email = email.trim().toLowerCase();
         this.region = (region != null) ? region.trim() : null;
         this.codigoDistribuidor = codigoDistribuidor;
-        this.nivelDistribuidor = nivelDistribuidor;
+        this.maxDominios = maxDominios;
+        this.nivelDistribuidor = NivelDistribuidor.calcularNivel(maxDominios);
         this.clientes = new ArrayList<>();
     }
 
@@ -69,8 +71,17 @@ public class Distribuidor {
         return codigoDistribuidor;
     }
 
+    public int getMaxDominios() {
+        return maxDominios;
+    }
+
     public NivelDistribuidor getNivelDistribuidor() {
         return nivelDistribuidor;
+    }
+
+    public void actualizarMaxDominios(int maxDominios) {
+        this.maxDominios = maxDominios;
+        this.nivelDistribuidor = NivelDistribuidor.calcularNivel(maxDominios);
     }
 
     public Comision getComision() {

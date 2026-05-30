@@ -48,7 +48,7 @@ public class TarjetaCreditoDataMapper implements DataMapper<TarjetaCredito, Long
                 .toList();
     }
 
-    private TarjetaCreditoJpa toJpa(TarjetaCredito domain) {
+    public TarjetaCreditoJpa toJpa(TarjetaCredito domain) {
         if (domain == null) return null;
         TarjetaCreditoJpa jpa = new TarjetaCreditoJpa();
         jpa.setId(domain.getId());
@@ -64,7 +64,7 @@ public class TarjetaCreditoDataMapper implements DataMapper<TarjetaCredito, Long
         return jpa;
     }
 
-    private TarjetaCredito toDomain(TarjetaCreditoJpa jpa) {
+    public TarjetaCredito toDomain(TarjetaCreditoJpa jpa) {
         if (jpa == null) return null;
         Long clienteId = jpa.getCliente() != null ? jpa.getCliente().getId() : null;
         return new TarjetaCredito(
