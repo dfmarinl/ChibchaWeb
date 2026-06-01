@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Server, Globe, Shield, Headphones, Cloud, RefreshCw, CheckCircle, ArrowRight } from 'lucide-react';
+import { Server, Globe, Shield, Headphones, Cloud, RefreshCw, CheckCircle, ArrowRight, Star, Crown, Gem, Mail, Phone, MapPin } from 'lucide-react';
 import { ROUTES, APP_NAME } from '../../constants';
 
 const features = [
@@ -11,30 +11,30 @@ const features = [
   { icon: RefreshCw, title: 'Migración Gratuita', desc: 'Te ayudamos a migrar tu sitio web sin costo desde cualquier proveedor.' },
 ];
 
-const plans = [
+const tiers = [
   {
-    name: 'Básico',
-    price: '$5',
-    period: '/mes',
-    desc: 'Perfecto para empezar',
-    features: ['1 Sitio Web', '10 GB Almacenamiento', '50 GB Transferencia', '5 Cuentas de Correo', 'SSL Gratuito'],
-    highlighted: false,
+    icon: Star,
+    name: 'PLATA',
+    desc: 'Para proyectos personales o sitios web pequeños. Ideal para empezar con recursos esenciales y alto rendimiento.',
+    color: 'text-gray-500',
+    bg: 'bg-gray-50',
+    border: 'border-gray-200',
   },
   {
-    name: 'Profesional',
-    price: '$15',
-    period: '/mes',
-    desc: 'Para negocios en crecimiento',
-    features: ['10 Sitios Web', '50 GB Almacenamiento', '500 GB Transferencia', '50 Cuentas de Correo', 'SSL Gratuito', 'Dominio Gratis'],
-    highlighted: true,
+    icon: Crown,
+    name: 'ORO',
+    desc: 'Para negocios en crecimiento que necesitan más recursos, mayor capacidad y funcionalidades avanzadas.',
+    color: 'text-yellow-500',
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-300',
   },
   {
-    name: 'Empresarial',
-    price: '$30',
-    period: '/mes',
-    desc: 'Solución empresarial completa',
-    features: ['Sitios Ilimitados', '200 GB Almacenamiento', 'Transferencia Ilimitada', 'Correos Ilimitados', 'SSL Gratuito', 'Prioridad Soporte'],
-    highlighted: false,
+    icon: Gem,
+    name: 'PLATINO',
+    desc: 'Solución empresarial con máximos recursos, características premium y soporte prioritario.',
+    color: 'text-blue-500',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
   },
 ];
 
@@ -133,46 +133,24 @@ const LandingPage: React.FC = () => {
               Elegí el plan que mejor se adapte a tus necesidades. Todos incluyen SSL y soporte técnico.
             </p>
           </div>
-          <div className='grid md:grid-cols-3 gap-8 max-w-5xl mx-auto'>
-            {plans.map((plan) => (
+          <div className='grid md:grid-cols-3 gap-8 max-w-4xl mx-auto'>
+            {tiers.map((tier, idx) => (
               <div
-                key={plan.name}
-                className={`relative rounded-xl border p-8 ${
-                  plan.highlighted
-                    ? 'border-primary-300 bg-white shadow-md'
-                    : 'border-secondary-200 bg-white'
+                key={tier.name}
+                className={`relative rounded-xl border p-8 bg-white ${
+                  idx === 1 ? 'border-yellow-300 shadow-md' : 'border-secondary-200'
                 }`}
               >
-                {plan.highlighted && (
+                {idx === 1 && (
                   <div className='absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-full'>
                     Más Popular
                   </div>
                 )}
-                <h3 className='text-lg font-semibold text-secondary-900'>{plan.name}</h3>
-                <p className='text-sm text-secondary-500 mt-1'>{plan.desc}</p>
-                <div className='mt-6 flex items-baseline gap-1'>
-                  <span className='text-4xl font-bold text-secondary-900'>{plan.price}</span>
-                  <span className='text-secondary-500'>{plan.period}</span>
+                <div className={`w-12 h-12 ${tier.bg} rounded-lg flex items-center justify-center`}>
+                  <tier.icon className={`w-6 h-6 ${tier.color}`} />
                 </div>
-                <ul className='mt-8 space-y-3'>
-                  {plan.features.map((feat) => (
-                    <li key={feat} className='flex items-center gap-2 text-sm text-secondary-600'>
-                      <CheckCircle className='w-4 h-4 text-success-500 flex-shrink-0' />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to={ROUTES.PUBLIC.REGISTER}
-                  className={`mt-8 flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    plan.highlighted
-                      ? 'bg-primary-600 text-white hover:bg-primary-700'
-                      : 'bg-white text-primary-600 border border-primary-300 hover:bg-primary-50'
-                  }`}
-                >
-                  Seleccionar Plan
-                  <ArrowRight className='w-4 h-4' />
-                </Link>
+                <h3 className='mt-4 text-lg font-semibold text-secondary-900'>{tier.name}</h3>
+                <p className='mt-2 text-sm text-secondary-500 leading-relaxed'>{tier.desc}</p>
               </div>
             ))}
           </div>
@@ -189,21 +167,21 @@ const LandingPage: React.FC = () => {
           <div className='mt-12 flex flex-col sm:flex-row items-center justify-center gap-8 text-secondary-600'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-primary-50 rounded-full flex items-center justify-center'>
-                <Server className='w-5 h-5 text-primary-600' />
+                <Mail className='w-5 h-5 text-primary-600' />
               </div>
-              <span className='text-sm'>info@chibchaweb.com</span>
+              <span className='text-sm'>info@chibchaweb.com.co</span>
             </div>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-primary-50 rounded-full flex items-center justify-center'>
-                <Server className='w-5 h-5 text-primary-600' />
+                <Phone className='w-5 h-5 text-primary-600' />
               </div>
-              <span className='text-sm'>+506 2222-3333</span>
+              <span className='text-sm'>+57 601 555 1234</span>
             </div>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-primary-50 rounded-full flex items-center justify-center'>
-                <Server className='w-5 h-5 text-primary-600' />
+                <MapPin className='w-5 h-5 text-primary-600' />
               </div>
-              <span className='text-sm'>San José, Costa Rica</span>
+              <span className='text-sm'>Bogotá, Colombia</span>
             </div>
           </div>
         </div>

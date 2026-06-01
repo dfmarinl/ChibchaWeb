@@ -4,9 +4,16 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.chibchaweb.chibchaweb.pago.application.PagoService;
+import com.chibchaweb.chibchaweb.pago.application.SuscripcionService;
 import com.chibchaweb.chibchaweb.pago.domain.IntentoManager;
 import com.chibchaweb.chibchaweb.pago.domain.IntentoManager.ResultadoIntento;
+import com.chibchaweb.chibchaweb.pago.domain.Pago;
+import com.chibchaweb.chibchaweb.pago.domain.Periodicidad;
+import com.chibchaweb.chibchaweb.pago.domain.Suscripcion;
+import com.chibchaweb.chibchaweb.pago.infrastructure.dto.PagoResponse;
 import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.PagoDataMapper;
 import com.chibchaweb.chibchaweb.plan.domain.HostingPlan;
 import com.chibchaweb.chibchaweb.plan.domain.PlanOroUnix;
 import com.chibchaweb.chibchaweb.plan.domain.PlanOroWindows;
@@ -15,6 +22,7 @@ import com.chibchaweb.chibchaweb.plan.domain.PlanPlataWindows;
 import com.chibchaweb.chibchaweb.plan.domain.PlanPlatinoUnix;
 import com.chibchaweb.chibchaweb.plan.domain.PlanPlatinoWindows;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.AsociarPlataformaRequest;
+import com.chibchaweb.chibchaweb.plan.infrastructure.dto.CompraPlanResult;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.CrearPlanRequest;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.ModificarPlanRequest;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.PlanHostingResponse;
@@ -30,13 +38,22 @@ public class HostingPlanService {
     private final HostingPlanDataMapper planMapper;
     private final HostingPlanJpaRepository planRepository;
     private final IntentoManager intentoManager;
+    private final PagoService pagoService;
+    private final PagoDataMapper pagoMapper;
+    private final SuscripcionService suscripcionService;
 
     public HostingPlanService(HostingPlanDataMapper planMapper,
                               HostingPlanJpaRepository planRepository,
-                              IntentoManager intentoManager) {
+                              IntentoManager intentoManager,
+                              PagoService pagoService,
+                              PagoDataMapper pagoMapper,
+                              SuscripcionService suscripcionService) {
         this.planMapper = planMapper;
         this.planRepository = planRepository;
         this.intentoManager = intentoManager;
+        this.pagoService = pagoService;
+        this.pagoMapper = pagoMapper;
+        this.suscripcionService = suscripcionService;
     }
 
     public PlanHostingResponse crear(Long clienteId, CrearPlanRequest request) {
@@ -133,6 +150,20 @@ public class HostingPlanService {
         }
 
         return toResponse(plan);
+    }
+
+    public CompraPlanResult comprarPlan(Long clienteId, Long planId, Long tarjetaId, Periodicidad periodicidad) {
+        HostingPlan plan = planMapper.findById(planId);
+        if (plan == null) throw new PlanNoEncontradoException(planId);
+
+        PagoResponse pagoResponse = pagoService.procesarPagoCompra(clienteId, tarjetaId, plan.getPrecioMensual(), periodicidad);
+
+        Pago pago = pagoMapper.findById(pagoResponse.id());
+        if (pago == null) throw new IllegalStateException("Pago no encontrado tras procesarlo");
+
+        Suscripcion suscripcion = suscripcionService.activar(clienteId, planId, periodicidad, pago);
+
+        return new CompraPlanResult(pagoResponse, suscripcion.getId(), suscripcion.getFechaFin().toString());
     }
 
     private HostingPlan crearDomain(String tipoPlan, String plataforma,
