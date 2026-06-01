@@ -42,6 +42,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         String message = ex.getMostSpecificCause().getMessage();
@@ -52,6 +58,10 @@ public class GlobalExceptionHandler {
         if (message != null && message.contains("documento_identidad")) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "El documento de identidad ya esta registrado"));
+        }
+        if (message != null && message.contains("sitio_web")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "No se puede eliminar el cliente porque tiene sitios web asociados"));
         }
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "Violacion de integridad de datos"));

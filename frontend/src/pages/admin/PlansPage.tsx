@@ -38,6 +38,7 @@ const PlansPage: React.FC = () => {
     cuentasEmail: 0,
     tipoPlan: 'PLATINO',
     plataforma: 'UNIX',
+    limiteSitios: 3,
   });
 
   const loadData = useCallback(async () => {
@@ -64,6 +65,7 @@ const PlansPage: React.FC = () => {
       cuentasEmail: 0,
       tipoPlan: 'PLATINO',
       plataforma: 'UNIX',
+      limiteSitios: 3,
     });
     setFormErrors({});
   };
@@ -86,6 +88,7 @@ const PlansPage: React.FC = () => {
       cuentasEmail: plan.cuentasEmail,
       tipoPlan: plan.tipoPlan,
       plataforma: plan.plataforma,
+      limiteSitios: plan.limiteSitios,
       mysqlIncluido: plan.mysqlIncluido ?? undefined,
       phpVersion: plan.phpVersion ?? undefined,
       sqlServerIncluido: plan.sqlServerIncluido ?? undefined,
@@ -104,6 +107,7 @@ const PlansPage: React.FC = () => {
     if (form.espacioDisco <= 0) errors.espacioDisco = 'Debe ser mayor a 0';
     if (form.anchoBanda <= 0) errors.anchoBanda = 'Debe ser mayor a 0';
     if (form.cuentasEmail <= 0) errors.cuentasEmail = 'Debe ser mayor a 0';
+    if (form.limiteSitios <= 0) errors.limiteSitios = 'Debe ser mayor a 0';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -430,6 +434,15 @@ const PlansPage: React.FC = () => {
               value={String(form.cuentasEmail)}
               onChange={e => setForm({ ...form, cuentasEmail: parseInt(e.target.value) || 0 })}
               error={formErrors.cuentasEmail}
+              disabled={submitting}
+            />
+            <Input
+              label='Límite de Sitios'
+              type='number'
+              min={1}
+              value={String(form.limiteSitios)}
+              onChange={e => setForm({ ...form, limiteSitios: parseInt(e.target.value) || 0 })}
+              error={formErrors.limiteSitios}
               disabled={submitting}
             />
           </div>

@@ -9,6 +9,7 @@ public record PlanHostingResponse(
         int espacioDisco,
         int anchoBanda,
         int cuentasEmail,
+        int limiteSitios,
         String tipoPlan,
         String plataforma,
         Boolean mysqlIncluido,

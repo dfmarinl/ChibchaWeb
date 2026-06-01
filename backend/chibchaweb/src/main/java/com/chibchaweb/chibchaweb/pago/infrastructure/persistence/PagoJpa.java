@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import com.chibchaweb.chibchaweb.pago.domain.EstadoPago;
+import com.chibchaweb.chibchaweb.pago.domain.Periodicidad;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpa;
 
 @Entity
@@ -37,6 +38,10 @@ public class PagoJpa {
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private ClienteJpa cliente;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Periodicidad periodicidad;
 
     @ManyToOne
     @JoinColumn(name = "tarjeta_id")
@@ -99,5 +104,13 @@ public class PagoJpa {
 
     public void setTarjeta(TarjetaCreditoJpa tarjeta) {
         this.tarjeta = tarjeta;
+    }
+
+    public Periodicidad getPeriodicidad() {
+        return periodicidad;
+    }
+
+    public void setPeriodicidad(Periodicidad periodicidad) {
+        this.periodicidad = periodicidad;
     }
 }

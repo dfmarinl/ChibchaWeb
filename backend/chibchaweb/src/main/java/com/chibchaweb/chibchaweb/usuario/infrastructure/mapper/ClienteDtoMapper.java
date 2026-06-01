@@ -10,7 +10,6 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.ClienteResp
 public interface ClienteDtoMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "limitesSitios", ignore = true)
     Cliente toDomain(CrearClienteRequest request);
 
     ClienteResponse toResponse(Cliente cliente);

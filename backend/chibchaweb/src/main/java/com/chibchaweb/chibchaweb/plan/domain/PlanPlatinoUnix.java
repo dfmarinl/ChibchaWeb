@@ -13,8 +13,9 @@ public class PlanPlatinoUnix extends PlanPlatino {
 
     public PlanPlatinoUnix(Long id, String nombre, double precioMensual,
                            int espacioDisco, int anchoBanda, int cuentasEmail,
-                           boolean mysqlIncluido, String phpVersion) {
-        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail);
+                           boolean mysqlIncluido, String phpVersion,
+                           int limiteSitios) {
+        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail, limiteSitios);
         this.mysqlIncluido = mysqlIncluido;
         this.phpVersion = phpVersion;
     }

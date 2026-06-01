@@ -8,8 +8,9 @@ public class PlanOro extends HostingPlan {
     }
 
     public PlanOro(Long id, String nombre, double precioMensual,
-                   int espacioDisco, int anchoBanda, int cuentasEmail) {
-        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail);
+                   int espacioDisco, int anchoBanda, int cuentasEmail,
+                   int limiteSitios) {
+        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail, limiteSitios);
     }
 
     @Override

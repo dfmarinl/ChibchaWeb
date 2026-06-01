@@ -50,6 +50,7 @@ public class HostingPlanService {
         HostingPlan plan = crearDomain(request.tipoPlan(), request.plataforma(),
                 null, request.nombre(), request.precioMensual(),
                 request.espacioDisco(), request.anchoBanda(), request.cuentasEmail(),
+                request.limiteSitios(),
                 request.mysqlIncluido(), request.phpVersion(),
                 request.sqlServerIncluido(), request.iisVersion(),
                 request.pythonIncluido(), request.aspNetVersion());
@@ -87,6 +88,7 @@ public class HostingPlanService {
         HostingPlan plan = crearDomain(tipoPlan, plataforma,
                 id, request.nombre(), request.precioMensual(),
                 request.espacioDisco(), request.anchoBanda(), request.cuentasEmail(),
+                existente.getLimiteSitios(),
                 request.mysqlIncluido(), request.phpVersion(),
                 request.sqlServerIncluido(), request.iisVersion(),
                 request.pythonIncluido(), request.aspNetVersion());
@@ -119,6 +121,7 @@ public class HostingPlanService {
         HostingPlan plan = crearDomain(tipoPlan, request.plataforma(),
                 null, existente.getNombre(), existente.getPrecioMensual(),
                 existente.getEspacioDisco(), existente.getAnchoBanda(), existente.getCuentasEmail(),
+                existente.getLimiteSitios(),
                 request.mysqlIncluido(), request.phpVersion(),
                 request.sqlServerIncluido(), request.iisVersion(),
                 request.pythonIncluido(), request.aspNetVersion());
@@ -135,6 +138,7 @@ public class HostingPlanService {
     private HostingPlan crearDomain(String tipoPlan, String plataforma,
                                      Long id, String nombre, double precioMensual,
                                      int espacioDisco, int anchoBanda, int cuentasEmail,
+                                     int limiteSitios,
                                      Boolean mysqlIncluido, String phpVersion,
                                      Boolean sqlServerIncluido, String iisVersion,
                                      Boolean pythonIncluido, String aspNetVersion) {
@@ -146,31 +150,33 @@ public class HostingPlanService {
                 if (isUnix) {
                     return new PlanPlatinoUnix(id, nombre, precioMensual, espacioDisco,
                             anchoBanda, cuentasEmail,
-                            mysqlIncluido != null && mysqlIncluido, phpVersion != null ? phpVersion : "8.2");
+                            mysqlIncluido != null && mysqlIncluido, phpVersion != null ? phpVersion : "8.2",
+                            limiteSitios);
                 } else if (isWindows) {
                     return new PlanPlatinoWindows(id, nombre, precioMensual, espacioDisco,
                             anchoBanda, cuentasEmail,
-                            sqlServerIncluido != null && sqlServerIncluido, iisVersion != null ? iisVersion : "10.0");
+                            sqlServerIncluido != null && sqlServerIncluido, iisVersion != null ? iisVersion : "10.0",
+                            limiteSitios);
                 }
                 break;
             case "PLATA":
                 if (isUnix) {
                     return new PlanPlataUnix(id, nombre, precioMensual, espacioDisco,
-                            anchoBanda, cuentasEmail);
+                            anchoBanda, cuentasEmail, limiteSitios);
                 } else if (isWindows) {
                     return new PlanPlataWindows(id, nombre, precioMensual, espacioDisco,
-                            anchoBanda, cuentasEmail);
+                            anchoBanda, cuentasEmail, limiteSitios);
                 }
                 break;
             case "ORO":
                 if (isUnix) {
                     return new PlanOroUnix(id, nombre, precioMensual, espacioDisco,
                             anchoBanda, cuentasEmail,
-                            pythonIncluido != null && pythonIncluido);
+                            pythonIncluido != null && pythonIncluido, limiteSitios);
                 } else if (isWindows) {
                     return new PlanOroWindows(id, nombre, precioMensual, espacioDisco,
                             anchoBanda, cuentasEmail,
-                            aspNetVersion != null ? aspNetVersion : "4.8");
+                            aspNetVersion != null ? aspNetVersion : "4.8", limiteSitios);
                 }
                 break;
         }
@@ -201,6 +207,7 @@ public class HostingPlanService {
         return new PlanHostingResponse(
                 plan.getId(), plan.getNombre(), plan.getPrecioMensual(),
                 plan.getEspacioDisco(), plan.getAnchoBanda(), plan.getCuentasEmail(),
+                plan.getLimiteSitios(),
                 tipoPlan, plataforma,
                 mysqlIncluido, phpVersion,
                 sqlServerIncluido, iisVersion,

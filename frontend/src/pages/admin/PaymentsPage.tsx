@@ -1,41 +1,69 @@
-import { useState } from 'react';
-import { Plus, Search, Download, CreditCard } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, Download, CreditCard } from 'lucide-react';
 import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { PageHeader, StatsCard } from '../../components/common';
 import { Table, Thead, Tbody, Th, Tr, Td, EmptyState } from '../../components/tables';
-import { mockPayments, mockUsers, mockPlans } from '../../mock';
-import { PAYMENT_STATUS } from '../../constants';
+import { paymentsApi, PagoResponse } from '../../api/payments';
+
+const getStatusBadge = (estado: string) => {
+  switch (estado) {
+    case 'APROBADO':
+      return <Badge variant='success' dot>Aprobado</Badge>;
+    case 'PENDIENTE':
+      return <Badge variant='warning' dot>Pendiente</Badge>;
+    case 'RECHAZADO':
+      return <Badge variant='error' dot>Rechazado</Badge>;
+    case 'ANULADO':
+      return <Badge variant='default'>Anulado</Badge>;
+    default:
+      return <Badge variant='default'>-</Badge>;
+  }
+};
+
+const formatMonto = (monto: number) =>
+  `$${monto.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const PaymentsPage: React.FC = () => {
+  const [payments, setPayments] = useState<PagoResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const payments = mockPayments.filter(
-    (payment) =>
-      payment.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mockUsers.find(u => u.id === payment.clientId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const loadPayments = useCallback(async () => {
+    try {
+      const data = await paymentsApi.getAll();
+      setPayments(data);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPayments();
+  }, [loadPayments]);
+
+  const filtered = payments.filter(
+    (p) =>
+      p.referencia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.clienteNombre?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case PAYMENT_STATUS.COMPLETED:
-        return <Badge variant='success' dot>Completado</Badge>;
-      case PAYMENT_STATUS.PENDING:
-        return <Badge variant='warning' dot>Pendiente</Badge>;
-      case PAYMENT_STATUS.FAILED:
-        return <Badge variant='error' dot>Rechazado</Badge>;
-      case PAYMENT_STATUS.REFUNDED:
-        return <Badge variant='default'>Reembolsado</Badge>;
-      default:
-        return <Badge variant='default'>-</Badge>;
-    }
-  };
+  const totalAprobado = payments
+    .filter((p) => p.estado === 'APROBADO')
+    .reduce((sum, p) => sum + p.monto, 0);
 
-  const totalCompleted = mockPayments
-    .filter((p) => p.status === PAYMENT_STATUS.COMPLETED)
-    .reduce((sum, p) => sum + p.amount, 0);
+  const aprobados = payments.filter((p) => p.estado === 'APROBADO').length;
+  const pendientes = payments.filter((p) => p.estado === 'PENDIENTE').length;
+  const rechazados = payments.filter((p) => p.estado === 'RECHAZADO').length;
 
-  const pendingPayments = mockPayments.filter((p) => p.status === PAYMENT_STATUS.PENDING).length;
-  const failedPayments = mockPayments.filter((p) => p.status === PAYMENT_STATUS.FAILED).length;
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center py-24'>
+        <div className='w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin' />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -47,36 +75,32 @@ const PaymentsPage: React.FC = () => {
             <Button variant='outline' leftIcon={<Download className='w-4 h-4' />}>
               Exportar
             </Button>
-            <Button variant='primary' leftIcon={<Plus className='w-4 h-4' />}>
-              Nuevo Pago
-            </Button>
           </div>
         }
       />
 
-      {/* Stats */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-8'>
         <StatsCard
           title='Total Recaudado'
-          value={`$${(totalCompleted / 100).toLocaleString('es-CO')}`}
+          value={formatMonto(totalAprobado)}
           icon={CreditCard}
           iconColor='text-success-600'
         />
         <StatsCard
-          title='Pagos Completados'
-          value={mockPayments.filter((p) => p.status === PAYMENT_STATUS.COMPLETED).length}
+          title='Pagos Aprobados'
+          value={aprobados}
           icon={CreditCard}
           iconColor='text-primary-600'
         />
         <StatsCard
           title='Pagos Pendientes'
-          value={pendingPayments}
+          value={pendientes}
           icon={CreditCard}
           iconColor='text-warning-600'
         />
         <StatsCard
           title='Pagos Rechazados'
-          value={failedPayments}
+          value={rechazados}
           icon={CreditCard}
           iconColor='text-error-600'
         />
@@ -99,7 +123,7 @@ const PaymentsPage: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent padding='none'>
-          {payments.length === 0 ? (
+          {filtered.length === 0 ? (
             <EmptyState
               message='No hay pagos registrados'
               description='No hay pagos que coincidan con tu búsqueda.'
@@ -108,38 +132,31 @@ const PaymentsPage: React.FC = () => {
             <Table>
               <Thead>
                 <Tr>
-                  <Th>Factura</Th>
+                  <Th>Referencia</Th>
                   <Th>Cliente</Th>
-                  <Th>Plan</Th>
-                  <Th>Método</Th>
+                  <Th>Tarjeta</Th>
+                  <Th>Tipo</Th>
                   <Th>Monto</Th>
                   <Th>Estado</Th>
                   <Th>Fecha</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {payments.map((payment) => {
-                  const client = mockUsers.find((u) => u.id === payment.clientId);
-                  const plan = mockPlans.find((p) => p.id === payment.planId);
-
-                  return (
-                    <Tr key={payment.id}>
-                      <Td>
-                        <span className='font-mono text-sm'>{payment.invoiceNumber}</span>
-                      </Td>
-                      <Td>{client?.name || '-'}</Td>
-                      <Td>{plan?.name || '-'}</Td>
-                      <Td>{payment.paymentMethod}</Td>
-                      <Td>
-                        <span className='font-semibold'>
-                          ${(payment.amount / 100).toLocaleString('es-CO')}
-                        </span>
-                      </Td>
-                      <Td>{getStatusBadge(payment.status)}</Td>
-                      <Td>{new Date(payment.paymentDate).toLocaleDateString('es-CO')}</Td>
-                    </Tr>
-                  );
-                })}
+                {filtered.map((payment) => (
+                  <Tr key={payment.id}>
+                    <Td>
+                      <span className='font-mono text-sm'>{payment.referencia || '-'}</span>
+                    </Td>
+                    <Td>{payment.clienteNombre || '-'}</Td>
+                    <Td>{payment.tarjetaEnmascarada || '-'}</Td>
+                    <Td>{payment.tipoTarjeta || '-'}</Td>
+                    <Td>
+                      <span className='font-semibold'>{formatMonto(payment.monto)}</span>
+                    </Td>
+                    <Td>{getStatusBadge(payment.estado)}</Td>
+                    <Td>{new Date(payment.fecha).toLocaleDateString('es-CO')}</Td>
+                  </Tr>
+                ))}
               </Tbody>
             </Table>
           )}

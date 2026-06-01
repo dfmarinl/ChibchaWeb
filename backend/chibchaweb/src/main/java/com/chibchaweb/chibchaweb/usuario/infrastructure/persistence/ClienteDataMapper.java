@@ -54,7 +54,6 @@ public class ClienteDataMapper implements DataMapper<Cliente, Long> {
         jpa.setDireccion(domain.getDireccion());
         jpa.setDocumentoIdentidad(domain.getDocumentoIdentidad());
         jpa.setRegion(domain.getRegion());
-        jpa.setLimitesSitios(domain.getLimitesSitios());
         return jpa;
     }
 

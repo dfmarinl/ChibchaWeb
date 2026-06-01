@@ -11,6 +11,7 @@ public record CrearPlanRequest(
         @Positive int cuentasEmail,
         @NotBlank String tipoPlan,
         @NotBlank String plataforma,
+        @Positive int limiteSitios,
         Boolean mysqlIncluido,
         String phpVersion,
         Boolean sqlServerIncluido,

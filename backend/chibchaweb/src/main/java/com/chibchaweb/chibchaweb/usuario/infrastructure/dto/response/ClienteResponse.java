@@ -10,6 +10,5 @@ public record ClienteResponse(
         LocalDateTime fechaRegistro,
         String direccion,
         String documentoIdentidad,
-        String region,
-        int limitesSitios
+        String region
 ) {}

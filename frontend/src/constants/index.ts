@@ -62,6 +62,12 @@ export const PLAN_STATUS = {
   CANCELLED: 'cancelled',
 } as const;
 
+export const SUSCRIPCION_STATUS = {
+  ACTIVA: 'ACTIVA',
+  EXPIRADA: 'EXPIRADA',
+  CANCELADA: 'CANCELADA',
+} as const;
+
 export const DOMAIN_STATUS = {
   ACTIVE: 'active',
   EXPIRED: 'expired',

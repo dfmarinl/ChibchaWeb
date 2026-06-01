@@ -4,6 +4,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.chibchaweb.chibchaweb.acceso.domain.NombreRol;
+import com.chibchaweb.chibchaweb.dominio.infrastructure.persistence.DominioJpaRepository;
+import com.chibchaweb.chibchaweb.dominio.infrastructure.persistence.SitioWebJpaRepository;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.PagoJpaRepository;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.SuscripcionJpaRepository;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.TarjetaCreditoJpaRepository;
+import com.chibchaweb.chibchaweb.soporte.infrastructure.persistence.TicketJpaRepository;
 import com.chibchaweb.chibchaweb.usuario.domain.Cliente;
 import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarClienteRequest;
@@ -23,14 +29,32 @@ public class ClienteService {
     private final ClienteDataMapper clienteMapper;
     private final ClienteJpaRepository clienteJpaRepository;
     private final ClienteDtoMapper dtoMapper;
+    private final SitioWebJpaRepository sitioWebRepository;
+    private final DominioJpaRepository dominioRepository;
+    private final TicketJpaRepository ticketRepository;
+    private final SuscripcionJpaRepository suscripcionRepository;
+    private final PagoJpaRepository pagoRepository;
+    private final TarjetaCreditoJpaRepository tarjetaRepository;
 
     public ClienteService(UsuarioFactory factory, ClienteDataMapper clienteMapper,
                           ClienteJpaRepository clienteJpaRepository,
-                          ClienteDtoMapper dtoMapper) {
+                          ClienteDtoMapper dtoMapper,
+                          SitioWebJpaRepository sitioWebRepository,
+                          DominioJpaRepository dominioRepository,
+                          TicketJpaRepository ticketRepository,
+                          SuscripcionJpaRepository suscripcionRepository,
+                          PagoJpaRepository pagoRepository,
+                          TarjetaCreditoJpaRepository tarjetaRepository) {
         this.factory = factory;
         this.clienteMapper = clienteMapper;
         this.clienteJpaRepository = clienteJpaRepository;
         this.dtoMapper = dtoMapper;
+        this.sitioWebRepository = sitioWebRepository;
+        this.dominioRepository = dominioRepository;
+        this.ticketRepository = ticketRepository;
+        this.suscripcionRepository = suscripcionRepository;
+        this.pagoRepository = pagoRepository;
+        this.tarjetaRepository = tarjetaRepository;
     }
 
     public ClienteResponse crear(CrearClienteRequest request) {
@@ -90,6 +114,14 @@ public class ClienteService {
     public void eliminar(Long id) {
         Cliente cliente = clienteMapper.findById(id);
         if (cliente == null) throw UsuarioNoEncontradoException.porId(id);
+
+        sitioWebRepository.deleteByPropietarioId(id);
+        ticketRepository.deleteByClienteId(id);
+        dominioRepository.deleteByPropietarioId(id);
+        suscripcionRepository.deleteByClienteId(id);
+        pagoRepository.deleteByClienteId(id);
+        tarjetaRepository.deleteByClienteId(id);
+
         clienteMapper.delete(id);
     }
 }

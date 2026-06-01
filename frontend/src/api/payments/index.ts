@@ -1,42 +1,49 @@
 import apiClient from '../axios';
-import { PAYMENT_STATUS } from '../../constants';
 
-export interface Payment {
-  id: string;
-  clientId: string;
-  planId: string;
-  amount: number;
-  status: typeof PAYMENT_STATUS[keyof typeof PAYMENT_STATUS];
-  paymentDate: string;
-  paymentMethod: string;
-  invoiceNumber: string;
+export interface PagoResponse {
+  id: number;
+  monto: number;
+  referencia: string;
+  estado: string;
+  fecha: string;
+  tarjetaEnmascarada: string;
+  tipoTarjeta: string;
+  clienteNombre: string;
+  periodicidad: string;
 }
 
-export interface CreatePaymentData {
-  clientId: string;
-  planId: string;
-  amount: number;
-  paymentMethod: string;
+export interface CompraPlanData {
+  tarjetaId: number;
+  periodicidad: string;
+}
+
+export interface CompraPlanResponse {
+  exitoso: boolean;
+  mensaje: string;
+  pago?: PagoResponse;
+  limiteExcedido?: boolean;
+  suscripcionId?: number;
+  fechaFin?: string;
+}
+
+export interface MisPagosResponse {
+  exitoso: boolean;
+  pagos: PagoResponse[];
 }
 
 export const paymentsApi = {
-  getAll: async (): Promise<Payment[]> => {
-    const response = await apiClient.get<Payment[]>('/payments');
+  getAll: async (): Promise<PagoResponse[]> => {
+    const response = await apiClient.get<PagoResponse[]>('/pagos');
     return response.data;
   },
 
-  getByClient: async (clientId: string): Promise<Payment[]> => {
-    const response = await apiClient.get<Payment[]>(`/payments/client/${clientId}`);
+  getMisPagos: async (): Promise<MisPagosResponse> => {
+    const response = await apiClient.get<MisPagosResponse>('/pagos/mis-pagos');
     return response.data;
   },
 
-  getById: async (id: string): Promise<Payment> => {
-    const response = await apiClient.get<Payment>(`/payments/${id}`);
-    return response.data;
-  },
-
-  create: async (data: CreatePaymentData): Promise<Payment> => {
-    const response = await apiClient.post<Payment>('/payments', data);
+  consultarIntentos: async (): Promise<{ exitoso: boolean; intentosRestantes: number; limiteExcedido: boolean }> => {
+    const response = await apiClient.get('/pagos/intentos');
     return response.data;
   },
 };

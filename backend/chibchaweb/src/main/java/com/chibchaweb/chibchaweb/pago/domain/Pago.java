@@ -16,11 +16,13 @@ public class Pago {
     private Cliente cliente;
     private TarjetaCredito tarjeta;
     private EstrategiaPago estrategia;
+    private Periodicidad periodicidad;
 
     protected Pago() {
     }
 
-    public Pago(Long id, double monto, Cliente cliente, TarjetaCredito tarjeta, EstrategiaPago estrategia) {
+    public Pago(Long id, double monto, Cliente cliente, TarjetaCredito tarjeta, EstrategiaPago estrategia,
+                Periodicidad periodicidad) {
         if (monto <= 0) {
             throw new IllegalArgumentException("El monto debe ser positivo");
         }
@@ -33,11 +35,15 @@ public class Pago {
         if (estrategia == null) {
             throw new IllegalArgumentException("La estrategia de pago no puede ser nula");
         }
+        if (periodicidad == null) {
+            throw new IllegalArgumentException("La periodicidad no puede ser nula");
+        }
         this.id = id;
         this.monto = monto;
         this.cliente = cliente;
         this.tarjeta = tarjeta;
         this.estrategia = estrategia;
+        this.periodicidad = periodicidad;
         this.estado = EstadoPago.PENDIENTE;
         this.fecha = LocalDateTime.now();
     }
@@ -72,6 +78,14 @@ public class Pago {
 
     public EstrategiaPago getEstrategia() {
         return estrategia;
+    }
+
+    public Periodicidad getPeriodicidad() {
+        return periodicidad;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setEstrategia(EstrategiaPago estrategia) {
@@ -111,6 +125,44 @@ public class Pago {
         return estado == EstadoPago.PENDIENTE;
     }
 
+    public static Pago reconstruir(Long id, double monto, Cliente cliente, TarjetaCredito tarjeta,
+                                    EstrategiaPago estrategia, EstadoPago estado,
+                                    String referencia, LocalDateTime fecha,
+                                    Periodicidad periodicidad) {
+        if (monto <= 0) {
+            throw new IllegalArgumentException("El monto debe ser positivo");
+        }
+        if (cliente == null) {
+            throw new IllegalArgumentException("El cliente no puede ser nulo");
+        }
+        if (tarjeta == null) {
+            throw new IllegalArgumentException("La tarjeta no puede ser nula");
+        }
+        if (estrategia == null) {
+            throw new IllegalArgumentException("La estrategia de pago no puede ser nula");
+        }
+        if (estado == null) {
+            throw new IllegalArgumentException("El estado no puede ser nulo");
+        }
+        if (fecha == null) {
+            throw new IllegalArgumentException("La fecha no puede ser nula");
+        }
+        if (periodicidad == null) {
+            throw new IllegalArgumentException("La periodicidad no puede ser nula");
+        }
+        Pago pago = new Pago();
+        pago.id = id;
+        pago.monto = monto;
+        pago.cliente = cliente;
+        pago.tarjeta = tarjeta;
+        pago.estrategia = estrategia;
+        pago.estado = estado;
+        pago.referencia = referencia;
+        pago.fecha = fecha;
+        pago.periodicidad = periodicidad;
+        return pago;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -125,6 +177,6 @@ public class Pago {
 
     @Override
     public String toString() {
-        return "Pago{id=" + id + ", monto=" + monto + ", estado=" + estado + "}";
+        return "Pago{id=" + id + ", monto=" + monto + ", estado=" + estado + ", periodicidad=" + periodicidad + "}";
     }
 }

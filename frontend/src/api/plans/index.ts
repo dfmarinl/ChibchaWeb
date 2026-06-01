@@ -1,5 +1,6 @@
 import apiClient from '../axios';
 import { PlanHosting, CrearPlanData, CrearPlanResponse, AsociarPlataformaData, AsociarPlataformaResponse } from '../../types/plan';
+import { CompraPlanData, CompraPlanResponse } from '../payments';
 
 export const plansApi = {
   getAll: async (): Promise<PlanHosting[]> => {
@@ -28,6 +29,11 @@ export const plansApi = {
 
   asociarPlataforma: async (id: number, data: AsociarPlataformaData): Promise<AsociarPlataformaResponse> => {
     const response = await apiClient.post<AsociarPlataformaResponse>(`/planes/${id}/asociar-plataforma`, data);
+    return response.data;
+  },
+
+  comprar: async (id: number, data: CompraPlanData): Promise<CompraPlanResponse> => {
+    const response = await apiClient.post<CompraPlanResponse>(`/planes/${id}/comprar`, data);
     return response.data;
   },
 };
