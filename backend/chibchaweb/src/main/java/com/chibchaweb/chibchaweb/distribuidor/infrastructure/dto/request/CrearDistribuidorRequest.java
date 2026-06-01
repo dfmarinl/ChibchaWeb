@@ -8,6 +8,5 @@ public record CrearDistribuidorRequest(
         @NotBlank String nombre,
         @NotBlank @Email String email,
         String region,
-        @NotBlank String codigoDistribuidor,
         @Min(0) int maxDominios
 ) {}

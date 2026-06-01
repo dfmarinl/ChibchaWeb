@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface DistribuidorJpaRepository extends JpaRepository<DistribuidorJpa, Long> {
 
     Optional<DistribuidorJpa> findByEmail(String email);
+
+    Optional<DistribuidorJpa> findByNombre(String nombre);
 }

@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Server, Globe, CreditCard, HelpCircle, LayoutDashboard, LogOut, User, Bell } from 'lucide-react';
+import { Server, Globe, CreditCard, HelpCircle, LayoutDashboard, LogOut, User } from 'lucide-react';
 import { ROUTES, APP_NAME, USER_ROLES } from '../../constants';
 import { useState, useEffect } from 'react';
 
@@ -68,11 +68,6 @@ const ClientLayout: React.FC = () => {
 
           {/* Right Side */}
           <div className='flex items-center gap-4'>
-            <button className='relative p-2 rounded-lg hover:bg-secondary-100 text-secondary-600 transition-colors'>
-              <Bell className='w-5 h-5' />
-              <span className='absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full'></span>
-            </button>
-
             <div className='flex items-center gap-3 pl-4 border-l border-secondary-200'>
               <div className='text-right hidden sm:block'>
                 <p className='text-sm font-medium text-secondary-900'>{user?.name || 'Cliente'}</p>

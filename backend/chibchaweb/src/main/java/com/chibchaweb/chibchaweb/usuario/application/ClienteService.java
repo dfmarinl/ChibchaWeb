@@ -6,15 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.chibchaweb.chibchaweb.acceso.domain.NombreRol;
 import com.chibchaweb.chibchaweb.dominio.infrastructure.persistence.DominioJpaRepository;
 import com.chibchaweb.chibchaweb.dominio.infrastructure.persistence.SitioWebJpaRepository;
+import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
 import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.PagoJpaRepository;
 import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.SuscripcionJpaRepository;
 import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.TarjetaCreditoJpaRepository;
 import com.chibchaweb.chibchaweb.soporte.infrastructure.persistence.TicketJpaRepository;
 import com.chibchaweb.chibchaweb.usuario.domain.Cliente;
+import com.chibchaweb.chibchaweb.usuario.domain.RegistroIntentoManager;
 import com.chibchaweb.chibchaweb.usuario.domain.UsuarioFactory;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.ActualizarClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.request.CrearClienteRequest;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.dto.response.ClienteResponse;
+import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.DocumentoDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.EmailDuplicadoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.exception.UsuarioNoEncontradoException;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.mapper.ClienteDtoMapper;
@@ -35,6 +38,7 @@ public class ClienteService {
     private final SuscripcionJpaRepository suscripcionRepository;
     private final PagoJpaRepository pagoRepository;
     private final TarjetaCreditoJpaRepository tarjetaRepository;
+    private final RegistroIntentoManager registroIntentoManager;
 
     public ClienteService(UsuarioFactory factory, ClienteDataMapper clienteMapper,
                           ClienteJpaRepository clienteJpaRepository,
@@ -44,7 +48,8 @@ public class ClienteService {
                           TicketJpaRepository ticketRepository,
                           SuscripcionJpaRepository suscripcionRepository,
                           PagoJpaRepository pagoRepository,
-                          TarjetaCreditoJpaRepository tarjetaRepository) {
+                          TarjetaCreditoJpaRepository tarjetaRepository,
+                          RegistroIntentoManager registroIntentoManager) {
         this.factory = factory;
         this.clienteMapper = clienteMapper;
         this.clienteJpaRepository = clienteJpaRepository;
@@ -55,12 +60,30 @@ public class ClienteService {
         this.suscripcionRepository = suscripcionRepository;
         this.pagoRepository = pagoRepository;
         this.tarjetaRepository = tarjetaRepository;
+        this.registroIntentoManager = registroIntentoManager;
     }
 
     public ClienteResponse crear(CrearClienteRequest request) {
-        if (clienteJpaRepository.findByEmail(request.email()).isPresent()) {
-            throw new EmailDuplicadoException(request.email());
+        String email = request.email();
+
+        if (clienteJpaRepository.findByEmail(email).isPresent()) {
+            var resultado = registroIntentoManager.registrarIntento(email);
+            if (resultado.limiteExcedido()) {
+                throw new IntentoLimiteExcedidoException();
+            }
+            throw new EmailDuplicadoException(email, resultado.intentosRestantes());
         }
+
+        if (clienteJpaRepository.findByDocumentoIdentidad(request.documentoIdentidad()).isPresent()) {
+            var resultado = registroIntentoManager.registrarIntento(email);
+            if (resultado.limiteExcedido()) {
+                throw new IntentoLimiteExcedidoException();
+            }
+            throw new DocumentoDuplicadoException(request.documentoIdentidad(), resultado.intentosRestantes());
+        }
+
+        registroIntentoManager.resetear(email);
+
         Cliente cliente = factory.crearUsuario(NombreRol.CLIENTE, request);
         var saved = clienteJpaRepository.save(clienteMapper.toJpa(cliente));
         return dtoMapper.toResponse(clienteMapper.toDomain(saved));
@@ -95,6 +118,12 @@ public class ClienteService {
             clienteJpaRepository.findByEmail(request.email())
                     .filter(existing -> !existing.getId().equals(id))
                     .ifPresent(e -> { throw new EmailDuplicadoException(request.email()); });
+        }
+
+        if (request.documentoIdentidad() != null) {
+            clienteJpaRepository.findByDocumentoIdentidad(request.documentoIdentidad())
+                    .filter(existing -> !existing.getId().equals(id))
+                    .ifPresent(e -> { throw new DocumentoDuplicadoException(request.documentoIdentidad()); });
         }
 
         Cliente merged = new Cliente(
