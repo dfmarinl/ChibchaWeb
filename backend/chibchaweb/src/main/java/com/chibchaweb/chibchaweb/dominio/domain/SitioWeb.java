@@ -3,7 +3,7 @@ package com.chibchaweb.chibchaweb.dominio.domain;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import com.chibchaweb.chibchaweb.plan.domain.HostingPlan;
+import com.chibchaweb.chibchaweb.pago.domain.Suscripcion;
 import com.chibchaweb.chibchaweb.usuario.domain.Cliente;
 
 public class SitioWeb {
@@ -15,7 +15,7 @@ public class SitioWeb {
     private LocalDateTime fechaCreacion;
     private Cliente propietario;
     private Dominio dominio;
-    private HostingPlan hostingPlan;
+    private Suscripcion suscripcion;
 
     protected SitioWeb() {
     }
@@ -72,15 +72,15 @@ public class SitioWeb {
         return dominio;
     }
 
-    public HostingPlan getHostingPlan() {
-        return hostingPlan;
+    public Suscripcion getSuscripcion() {
+        return suscripcion;
     }
 
-    public void asignarHostingPlan(HostingPlan hostingPlan) {
-        if (hostingPlan == null) {
-            throw new IllegalArgumentException("El plan de hosting no puede ser nulo");
+    public void asignarSuscripcion(Suscripcion suscripcion) {
+        if (suscripcion == null) {
+            throw new IllegalArgumentException("La suscripcion no puede ser nula");
         }
-        this.hostingPlan = hostingPlan;
+        this.suscripcion = suscripcion;
     }
 
     public void activar() {

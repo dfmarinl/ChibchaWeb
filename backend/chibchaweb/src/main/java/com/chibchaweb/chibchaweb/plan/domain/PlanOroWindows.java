@@ -12,8 +12,8 @@ public class PlanOroWindows extends PlanOro {
 
     public PlanOroWindows(Long id, String nombre, double precioMensual,
                           int espacioDisco, int anchoBanda, int cuentasEmail,
-                          String aspNetVersion) {
-        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail);
+                          String aspNetVersion, int limiteSitios) {
+        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail, limiteSitios);
         this.aspNetVersion = aspNetVersion;
     }
 

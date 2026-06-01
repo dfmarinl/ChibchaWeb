@@ -28,6 +28,19 @@ public class IntentoManager {
         intentos.remove(clienteId);
     }
 
+    public ResultadoIntento consultarIntentos(Long clienteId) {
+        IntentoEntry entry = intentos.get(clienteId);
+        if (entry == null) {
+            return new ResultadoIntento(true, MAX_INTENTOS, false);
+        }
+        entry.limpiarSiExpirado();
+        int actual = entry.getContador();
+        if (actual > MAX_INTENTOS) {
+            return new ResultadoIntento(false, 0, true);
+        }
+        return new ResultadoIntento(true, MAX_INTENTOS - actual, false);
+    }
+
     private static class IntentoEntry {
         private final AtomicInteger contador = new AtomicInteger(0);
         private long ultimoIntento = System.currentTimeMillis();
@@ -35,6 +48,10 @@ public class IntentoManager {
         public int incrementar() {
             ultimoIntento = System.currentTimeMillis();
             return contador.incrementAndGet();
+        }
+
+        public int getContador() {
+            return contador.get();
         }
 
         public void limpiarSiExpirado() {

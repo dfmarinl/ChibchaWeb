@@ -12,8 +12,8 @@ public class PlanOroUnix extends PlanOro {
 
     public PlanOroUnix(Long id, String nombre, double precioMensual,
                        int espacioDisco, int anchoBanda, int cuentasEmail,
-                       boolean pythonIncluido) {
-        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail);
+                       boolean pythonIncluido, int limiteSitios) {
+        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail, limiteSitios);
         this.pythonIncluido = pythonIncluido;
     }
 

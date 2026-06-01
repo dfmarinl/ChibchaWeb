@@ -62,6 +62,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setCuentasEmail(p.getCuentasEmail());
             jpa.setMysqlIncluido(p.isMysqlIncluido());
             jpa.setPhpVersion(p.getPhpVersion());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
         if (domain instanceof PlanPlatinoWindows p) {
@@ -74,6 +75,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setCuentasEmail(p.getCuentasEmail());
             jpa.setSqlServerIncluido(p.isSqlServerIncluido());
             jpa.setIisVersion(p.getIisVersion());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
         if (domain instanceof PlanPlataUnix p) {
@@ -84,6 +86,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setEspacioDisco(p.getEspacioDisco());
             jpa.setAnchoBanda(p.getAnchoBanda());
             jpa.setCuentasEmail(p.getCuentasEmail());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
         if (domain instanceof PlanPlataWindows p) {
@@ -94,6 +97,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setEspacioDisco(p.getEspacioDisco());
             jpa.setAnchoBanda(p.getAnchoBanda());
             jpa.setCuentasEmail(p.getCuentasEmail());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
         if (domain instanceof PlanOroUnix p) {
@@ -105,6 +109,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setAnchoBanda(p.getAnchoBanda());
             jpa.setCuentasEmail(p.getCuentasEmail());
             jpa.setPythonIncluido(p.isPythonIncluido());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
         if (domain instanceof PlanOroWindows p) {
@@ -116,6 +121,7 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             jpa.setAnchoBanda(p.getAnchoBanda());
             jpa.setCuentasEmail(p.getCuentasEmail());
             jpa.setAspNetVersion(p.getAspNetVersion());
+            jpa.setLimiteSitios(p.getLimiteSitios());
             return jpa;
         }
 
@@ -129,35 +135,37 @@ public class HostingPlanDataMapper implements DataMapper<HostingPlan, Long> {
             return new PlanPlatinoUnix(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
                     j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
-                    j.isMysqlIncluido(), j.getPhpVersion());
+                    j.isMysqlIncluido(), j.getPhpVersion(), j.getLimiteSitios());
         }
         if (jpa instanceof PlanPlatinoWindowsJpa j) {
             return new PlanPlatinoWindows(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
                     j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
-                    j.isSqlServerIncluido(), j.getIisVersion());
+                    j.isSqlServerIncluido(), j.getIisVersion(), j.getLimiteSitios());
         }
         if (jpa instanceof PlanPlataUnixJpa j) {
             return new PlanPlataUnix(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
-                    j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail());
+                    j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
+                    j.getLimiteSitios());
         }
         if (jpa instanceof PlanPlataWindowsJpa j) {
             return new PlanPlataWindows(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
-                    j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail());
+                    j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
+                    j.getLimiteSitios());
         }
         if (jpa instanceof PlanOroUnixJpa j) {
             return new PlanOroUnix(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
                     j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
-                    j.isPythonIncluido());
+                    j.isPythonIncluido(), j.getLimiteSitios());
         }
         if (jpa instanceof PlanOroWindowsJpa j) {
             return new PlanOroWindows(
                     j.getId(), j.getNombre(), j.getPrecioMensual(),
                     j.getEspacioDisco(), j.getAnchoBanda(), j.getCuentasEmail(),
-                    j.getAspNetVersion());
+                    j.getAspNetVersion(), j.getLimiteSitios());
         }
 
         throw new IllegalArgumentException("Unknown JPA type: " + jpa.getClass());

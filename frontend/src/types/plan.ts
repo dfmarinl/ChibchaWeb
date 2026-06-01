@@ -24,6 +24,7 @@ export interface CrearPlanData {
   cuentasEmail: number;
   tipoPlan: string;
   plataforma: string;
+  limiteSitios: number;
   mysqlIncluido?: boolean;
   phpVersion?: string;
   sqlServerIncluido?: boolean;

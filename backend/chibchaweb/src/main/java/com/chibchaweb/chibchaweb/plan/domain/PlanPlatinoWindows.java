@@ -13,8 +13,9 @@ public class PlanPlatinoWindows extends PlanPlatino {
 
     public PlanPlatinoWindows(Long id, String nombre, double precioMensual,
                               int espacioDisco, int anchoBanda, int cuentasEmail,
-                              boolean sqlServerIncluido, String iisVersion) {
-        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail);
+                              boolean sqlServerIncluido, String iisVersion,
+                              int limiteSitios) {
+        super(id, nombre, precioMensual, espacioDisco, anchoBanda, cuentasEmail, limiteSitios);
         this.sqlServerIncluido = sqlServerIncluido;
         this.iisVersion = iisVersion;
     }

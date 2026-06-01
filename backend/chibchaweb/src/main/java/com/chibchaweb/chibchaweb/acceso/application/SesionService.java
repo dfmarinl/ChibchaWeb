@@ -1,5 +1,6 @@
 package com.chibchaweb.chibchaweb.acceso.application;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +42,12 @@ public class SesionService {
 
     @Transactional
     public void invalidarSesionesActivas(Long cuentaId) {
-        repository.findByCuentaIdAndActivaTrue(cuentaId)
-                .ifPresent(jpa -> {
-                    Sesion sesion = mapper.toDomain(jpa);
-                    sesion.invalidar();
-                    mapper.update(sesion);
-                });
+        List<SesionJpa> activas = repository.findByCuentaIdAndActivaTrue(cuentaId);
+        for (SesionJpa jpa : activas) {
+            Sesion sesion = mapper.toDomain(jpa);
+            sesion.invalidar();
+            mapper.update(sesion);
+        }
     }
 
     public Optional<Sesion> validarSesion(Long sesionId) {

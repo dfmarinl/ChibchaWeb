@@ -15,7 +15,6 @@ public class Cliente extends Usuario {
     private String direccion;
     private String documentoIdentidad;
     private String region;
-    private int limitesSitios;
     private List<SitioWeb> sitiosWeb;
     private List<TarjetaCredito> tarjetas;
     private List<Ticket> tickets;
@@ -65,10 +64,6 @@ public class Cliente extends Usuario {
 
     public String getRegion() {
         return region;
-    }
-
-    public int getLimitesSitios() {
-        return limitesSitios;
     }
 
     public List<SitioWeb> getSitiosWeb() {

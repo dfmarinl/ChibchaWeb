@@ -3,6 +3,8 @@ package com.chibchaweb.chibchaweb.dominio.infrastructure.persistence;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import com.chibchaweb.chibchaweb.dominio.domain.SitioWeb;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.SuscripcionDataMapper;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.SuscripcionJpaRepository;
 import com.chibchaweb.chibchaweb.shared.domain.DataMapper;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteDataMapper;
 
@@ -12,13 +14,19 @@ public class SitioWebDataMapper implements DataMapper<SitioWeb, Long> {
     private final SitioWebJpaRepository repository;
     private final ClienteDataMapper clienteMapper;
     private final DominioDataMapper dominioMapper;
+    private final SuscripcionDataMapper suscripcionMapper;
+    private final SuscripcionJpaRepository suscripcionJpaRepository;
 
     public SitioWebDataMapper(SitioWebJpaRepository repository,
                               ClienteDataMapper clienteMapper,
-                              DominioDataMapper dominioMapper) {
+                              DominioDataMapper dominioMapper,
+                              SuscripcionDataMapper suscripcionMapper,
+                              SuscripcionJpaRepository suscripcionJpaRepository) {
         this.repository = repository;
         this.clienteMapper = clienteMapper;
         this.dominioMapper = dominioMapper;
+        this.suscripcionMapper = suscripcionMapper;
+        this.suscripcionJpaRepository = suscripcionJpaRepository;
     }
 
     @Override
@@ -64,6 +72,10 @@ public class SitioWebDataMapper implements DataMapper<SitioWeb, Long> {
         if (domain.getDominio() != null) {
             jpa.setDominio(dominioMapper.toJpa(domain.getDominio()));
         }
+        if (domain.getSuscripcion() != null && domain.getSuscripcion().getId() != null) {
+            suscripcionJpaRepository.findById(domain.getSuscripcion().getId())
+                    .ifPresent(jpa::setSuscripcion);
+        }
         return jpa;
     }
 
@@ -81,6 +93,9 @@ public class SitioWebDataMapper implements DataMapper<SitioWeb, Long> {
                 clienteMapper.toDomain(jpa.getPropietario()),
                 dominioMapper.toDomain(jpa.getDominio())
             );
+        }
+        if (jpa.getSuscripcion() != null) {
+            sitioWeb.asignarSuscripcion(suscripcionMapper.toDomain(jpa.getSuscripcion()));
         }
         return sitioWeb;
     }

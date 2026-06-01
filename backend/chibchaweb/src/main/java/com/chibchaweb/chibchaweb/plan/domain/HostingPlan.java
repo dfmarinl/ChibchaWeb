@@ -11,18 +11,21 @@ public abstract class HostingPlan {
     protected int espacioDisco;
     protected int anchoBanda;
     protected int cuentasEmail;
+    protected int limiteSitios;
 
     protected HostingPlan() {
     }
 
     protected HostingPlan(Long id, String nombre, double precioMensual,
-                          int espacioDisco, int anchoBanda, int cuentasEmail) {
+                          int espacioDisco, int anchoBanda, int cuentasEmail,
+                          int limiteSitios) {
         this.id = id;
         this.nombre = nombre;
         this.precioMensual = precioMensual;
         this.espacioDisco = espacioDisco;
         this.anchoBanda = anchoBanda;
         this.cuentasEmail = cuentasEmail;
+        this.limiteSitios = limiteSitios;
     }
 
     public abstract Map<String, String> getCaracteristicas();
@@ -51,6 +54,10 @@ public abstract class HostingPlan {
 
     public int getCuentasEmail() {
         return cuentasEmail;
+    }
+
+    public int getLimiteSitios() {
+        return limiteSitios;
     }
 
     @Override

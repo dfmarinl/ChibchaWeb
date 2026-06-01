@@ -23,9 +23,6 @@ public class ClienteJpa extends UsuarioJpa {
 
     private String region;
 
-    @Column(name = "limites_sitios")
-    private int limitesSitios;
-
     @OneToMany(mappedBy = "cliente")
     private List<TarjetaCreditoJpa> tarjetas = new ArrayList<>();
 
@@ -54,14 +51,6 @@ public class ClienteJpa extends UsuarioJpa {
 
     public void setRegion(String region) {
         this.region = region;
-    }
-
-    public int getLimitesSitios() {
-        return limitesSitios;
-    }
-
-    public void setLimitesSitios(int limitesSitios) {
-        this.limitesSitios = limitesSitios;
     }
 
     public List<TarjetaCreditoJpa> getTarjetas() {

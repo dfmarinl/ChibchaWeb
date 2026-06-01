@@ -1,39 +1,95 @@
-import { Users, UserCircle, Package, Globe, CreditCard, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, UserCircle, Package, CreditCard, Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { StatsCard, PageHeader } from '../../components/common';
-import { mockUsers, mockPlans, mockPlans as plans, mockDomains, mockPayments, mockTickets, mockTicketStats } from '../../mock';
-import { USER_ROLES } from '../../constants';
+import apiClient from '../../api/axios';
+import { paymentsApi, PagoResponse } from '../../api/payments';
+import { plansApi } from '../../api/plans';
+import type { PlanHosting } from '../../types/plan';
+
+interface UsuarioDto {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string | null;
+  fechaRegistro: string;
+  tipoUsuario: string;
+}
+
+const formatMonto = (monto: number) =>
+  `$${monto.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const getStatusBadgeClass = (status: string) => {
+  const styles: Record<string, string> = {
+    APROBADO: 'bg-success-100 text-success-700',
+    PENDIENTE: 'bg-warning-100 text-warning-700',
+    RECHAZADO: 'bg-error-100 text-error-700',
+    ANULADO: 'bg-secondary-100 text-secondary-600',
+  };
+  return styles[status] || 'bg-secondary-100 text-secondary-700';
+};
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    APROBADO: 'Aprobado',
+    PENDIENTE: 'Pendiente',
+    RECHAZADO: 'Rechazado',
+    ANULADO: 'Anulado',
+  };
+  return labels[status] || status;
+};
 
 const AdminDashboard: React.FC = () => {
-  const totalClients = mockUsers.filter((u) => u.role === USER_ROLES.CLIENT).length;
-  const totalEmployees = mockUsers.filter((u) => u.role === USER_ROLES.EMPLOYEE).length;
-  const totalDomains = mockDomains.length;
-  const totalPayments = mockPayments.reduce((sum, p) => sum + (p.status === 'completed' ? p.amount : 0), 0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [users, setUsers] = useState<UsuarioDto[]>([]);
+  const [payments, setPayments] = useState<PagoResponse[]>([]);
+  const [plans, setPlans] = useState<PlanHosting[]>([]);
 
-  const recentPayments = mockPayments.slice(0, 5);
-  const recentTickets = mockTickets.slice(0, 5);
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      completed: 'bg-success-100 text-success-700',
-      pending: 'bg-warning-100 text-warning-700',
-      failed: 'bg-error-100 text-error-700',
-      open: 'bg-blue-100 text-blue-700',
-      in_progress: 'bg-primary-100 text-primary-700',
-      resolved: 'bg-success-100 text-success-700',
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersRes, paymentsData, plansData] = await Promise.all([
+          apiClient.get<UsuarioDto[]>('/usuarios'),
+          paymentsApi.getAll(),
+          plansApi.getAll(),
+        ]);
+        setUsers(usersRes.data);
+        setPayments(paymentsData);
+        setPlans(plansData);
+      } catch (err: any) {
+        setError(err?.response?.data?.error || 'Error al cargar datos del dashboard');
+      } finally {
+        setLoading(false);
+      }
     };
-    return styles[status] || 'bg-secondary-100 text-secondary-700';
-  };
+    fetchData();
+  }, []);
 
-  const getPriorityBadge = (priority: string) => {
-    const styles: Record<string, string> = {
-      low: 'bg-secondary-100 text-secondary-700',
-      medium: 'bg-warning-100 text-warning-700',
-      high: 'bg-orange-100 text-orange-700',
-      urgent: 'bg-error-100 text-error-700',
-    };
-    return styles[priority] || 'bg-secondary-100 text-secondary-700';
-  };
+  const totalClients = users.filter((u) => u.tipoUsuario === 'CLIENTE').length;
+  const totalEmployees = users.filter((u) => u.tipoUsuario === 'EMPLEADO').length;
+  const totalPlans = plans.length;
+  const totalRevenue = payments
+    .filter((p) => p.estado === 'APROBADO')
+    .reduce((sum, p) => sum + p.monto, 0);
+
+  const sortedPayments = [...payments].sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  );
+  const recentPayments = sortedPayments.slice(0, 5);
+
+  const sortedClients = [...users]
+    .filter((u) => u.tipoUsuario === 'CLIENTE')
+    .sort((a, b) => new Date(b.fechaRegistro).getTime() - new Date(a.fechaRegistro).getTime());
+  const recentClients = sortedClients.slice(0, 4);
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-64'>
+        <Loader2 className='w-8 h-8 animate-spin text-primary-600' />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -42,45 +98,40 @@ const AdminDashboard: React.FC = () => {
         description='Resumen general del sistema ChibchaWEB'
       />
 
-      {/* Stats Grid */}
+      {error && (
+        <div className='mb-4 p-3 rounded-lg bg-error-50 border border-error-200'>
+          <p className='text-sm text-error-700'>{error}</p>
+        </div>
+      )}
+
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
         <StatsCard
           title='Clientes Activos'
           value={totalClients}
           icon={Users}
-          change='+12% este mes'
-          changeType='increase'
           iconColor='text-success-600'
         />
         <StatsCard
           title='Empleados'
           value={totalEmployees}
           icon={UserCircle}
-          change='2 nuevos'
-          changeType='neutral'
           iconColor='text-primary-600'
         />
         <StatsCard
-          title='Dominios'
-          value={totalDomains}
-          icon={Globe}
-          change='+8% este mes'
-          changeType='increase'
+          title='Planes Activos'
+          value={totalPlans}
+          icon={Package}
           iconColor='text-blue-600'
         />
         <StatsCard
           title='Ingresos Mensuales'
-          value={`$${(totalPayments / 100).toLocaleString('es-CO')}`}
+          value={formatMonto(totalRevenue)}
           icon={CreditCard}
-          change='+15% vs mes anterior'
-          changeType='increase'
           iconColor='text-warning-600'
         />
       </div>
 
-      {/* Charts and Tables */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
-        {/* Recent Payments */}
         <Card variant='bordered'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
@@ -90,111 +141,63 @@ const AdminDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className='space-y-4'>
-              {recentPayments.map((payment) => (
-                <div key={payment.id} className='flex items-center justify-between py-3 border-b border-secondary-100 last:border-0'>
-                  <div>
-                    <p className='text-sm font-medium text-secondary-900'>{payment.invoiceNumber}</p>
-                    <p className='text-xs text-secondary-500'>{payment.paymentMethod}</p>
+              {recentPayments.length === 0 ? (
+                <p className='text-sm text-secondary-500 text-center py-4'>No hay pagos registrados</p>
+              ) : (
+                recentPayments.map((payment) => (
+                  <div key={payment.id} className='flex items-center justify-between py-3 border-b border-secondary-100 last:border-0'>
+                    <div>
+                      <p className='text-sm font-medium text-secondary-900'>{payment.referencia || '-'}</p>
+                      <p className='text-xs text-secondary-500'>{payment.tipoTarjeta || payment.tarjetaEnmascarada || '-'}</p>
+                    </div>
+                    <div className='text-right'>
+                      <p className='text-sm font-semibold text-secondary-900'>
+                        {formatMonto(payment.monto)}
+                      </p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeClass(payment.estado)}`}>
+                        {getStatusLabel(payment.estado)}
+                      </span>
+                    </div>
                   </div>
-                  <div className='text-right'>
-                    <p className='text-sm font-semibold text-secondary-900'>
-                      ${(payment.amount / 100).toLocaleString('es-CO')}
-                    </p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(payment.status)}`}>
-                      {payment.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Ticket Stats */}
         <Card variant='bordered'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
-              <AlertCircle className='w-5 h-5 text-warning-600' />
-              Estado de Tickets
+              <Users className='w-5 h-5 text-primary-600' />
+              Últimos Clientes Registrados
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='p-4 bg-secondary-50 rounded-lg'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <AlertCircle className='w-4 h-4 text-blue-600' />
-                  <span className='text-sm text-secondary-600'>Abiertos</span>
-                </div>
-                <p className='text-2xl font-bold text-secondary-900'>{mockTicketStats.open}</p>
-              </div>
-              <div className='p-4 bg-secondary-50 rounded-lg'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <TrendingUp className='w-4 h-4 text-primary-600' />
-                  <span className='text-sm text-secondary-600'>En Progreso</span>
-                </div>
-                <p className='text-2xl font-bold text-secondary-900'>{mockTicketStats.inProgress}</p>
-              </div>
-              <div className='p-4 bg-secondary-50 rounded-lg'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <CheckCircle className='w-4 h-4 text-success-600' />
-                  <span className='text-sm text-secondary-600'>Resueltos</span>
-                </div>
-                <p className='text-2xl font-bold text-secondary-900'>{mockTicketStats.resolved}</p>
-              </div>
-              <div className='p-4 bg-error-50 rounded-lg'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <AlertCircle className='w-4 h-4 text-error-600' />
-                  <span className='text-sm text-secondary-600'>Urgentes</span>
-                </div>
-                <p className='text-2xl font-bold text-error-900'>{mockTicketStats.urgent}</p>
-              </div>
+            <div className='space-y-4'>
+              {recentClients.length === 0 ? (
+                <p className='text-sm text-secondary-500 text-center py-4'>No hay clientes registrados</p>
+              ) : (
+                recentClients.map((client) => (
+                  <div key={client.id} className='flex items-center gap-3 py-3 border-b border-secondary-100 last:border-0'>
+                    <div className='w-10 h-10 bg-success-100 rounded-full flex items-center justify-center'>
+                      <span className='text-sm font-medium text-success-700'>
+                        {client.nombre.charAt(0)}
+                      </span>
+                    </div>
+                    <div className='flex-1'>
+                      <p className='text-sm font-medium text-secondary-900'>{client.nombre}</p>
+                      <p className='text-xs text-secondary-500'>{client.email}</p>
+                    </div>
+                    <span className='text-xs text-secondary-400'>
+                      {new Date(client.fechaRegistro).toLocaleDateString('es-CO')}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Tickets Table */}
-      <Card variant='bordered'>
-        <CardHeader>
-          <CardTitle>Tickets Recientes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full'>
-              <thead>
-                <tr className='border-b border-secondary-200'>
-                  <th className='text-left py-3 px-4 text-sm font-semibold text-secondary-600'>ID</th>
-                  <th className='text-left py-3 px-4 text-sm font-semibold text-secondary-600'>Cliente</th>
-                  <th className='text-left py-3 px-4 text-sm font-semibold text-secondary-600'>Asunto</th>
-                  <th className='text-left py-3 px-4 text-sm font-semibold text-secondary-600'>Prioridad</th>
-                  <th className='text-left py-3 px-4 text-sm font-semibold text-secondary-600'>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTickets.map((ticket) => (
-                  <tr key={ticket.id} className='border-b border-secondary-100 hover:bg-secondary-50'>
-                    <td className='py-3 px-4 text-sm font-mono text-secondary-600'>{ticket.id}</td>
-                    <td className='py-3 px-4 text-sm text-secondary-900'>
-                      {mockUsers.find(u => u.id === ticket.clientId)?.name || 'Cliente'}
-                    </td>
-                    <td className='py-3 px-4 text-sm text-secondary-900'>{ticket.subject}</td>
-                    <td className='py-3 px-4'>
-                      <span className={`text-xs px-2 py-1 rounded-full ${getPriorityBadge(ticket.priority)}`}>
-                        {ticket.priority}
-                      </span>
-                    </td>
-                    <td className='py-3 px-4'>
-                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(ticket.status)}`}>
-                        {ticket.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

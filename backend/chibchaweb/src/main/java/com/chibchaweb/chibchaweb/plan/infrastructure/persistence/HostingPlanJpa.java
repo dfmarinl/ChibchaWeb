@@ -36,6 +36,9 @@ public abstract class HostingPlanJpa {
     @Column(name = "cuentas_email")
     protected int cuentasEmail;
 
+    @Column(name = "limite_sitios")
+    protected int limiteSitios;
+
     protected HostingPlanJpa() {
     }
 
@@ -85,5 +88,13 @@ public abstract class HostingPlanJpa {
 
     public void setCuentasEmail(int cuentasEmail) {
         this.cuentasEmail = cuentasEmail;
+    }
+
+    public int getLimiteSitios() {
+        return limiteSitios;
+    }
+
+    public void setLimiteSitios(int limiteSitios) {
+        this.limiteSitios = limiteSitios;
     }
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.SuscripcionJpa;
 import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteJpa;
 
 @Entity
@@ -39,8 +40,9 @@ public class SitioWebJpa {
     @JoinColumn(name = "dominio_id")
     private DominioJpa dominio;
 
-    @Column(name = "hosting_plan_id")
-    private Long hostingPlanId;
+    @ManyToOne
+    @JoinColumn(name = "suscripcion_id")
+    private SuscripcionJpa suscripcion;
 
     public SitioWebJpa() {
     }
@@ -101,11 +103,11 @@ public class SitioWebJpa {
         this.dominio = dominio;
     }
 
-    public Long getHostingPlanId() {
-        return hostingPlanId;
+    public SuscripcionJpa getSuscripcion() {
+        return suscripcion;
     }
 
-    public void setHostingPlanId(Long hostingPlanId) {
-        this.hostingPlanId = hostingPlanId;
+    public void setSuscripcion(SuscripcionJpa suscripcion) {
+        this.suscripcion = suscripcion;
     }
 }

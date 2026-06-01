@@ -49,8 +49,9 @@ const ClientsPage: React.FC = () => {
       await authApi.registerCliente(data as CreateClientData);
       setModalMode(null);
       await fetchClients();
-    } catch {
-      setError('Error al crear cliente');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.response?.data?.mensaje;
+      setError(msg || 'Error al crear cliente');
     } finally {
       setSubmitting(false);
     }
@@ -64,8 +65,9 @@ const ClientsPage: React.FC = () => {
       setModalMode(null);
       setSelectedClient(null);
       await fetchClients();
-    } catch {
-      setError('Error al actualizar cliente');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.response?.data?.mensaje;
+      setError(msg || 'Error al actualizar cliente');
     } finally {
       setSubmitting(false);
     }
@@ -77,8 +79,9 @@ const ClientsPage: React.FC = () => {
       await clientsApi.delete(deleteTarget.id);
       setDeleteTarget(null);
       await fetchClients();
-    } catch {
-      setError('Error al eliminar cliente');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.response?.data?.mensaje;
+      setError(msg || 'Error al eliminar cliente');
     }
   };
 
