@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Server, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Server, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
 import { APP_NAME } from '../../constants';
 import { useAuth } from '../../hooks';
@@ -126,9 +126,18 @@ const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Back to Home */}
+        <Link
+          to='/'
+          className='flex items-center justify-center gap-1.5 text-sm text-secondary-500 hover:text-primary-600 transition-colors mt-4'
+        >
+          <ArrowLeft className='w-4 h-4' />
+          Volver al inicio
+        </Link>
+
         {/* Footer */}
-        <p className='text-center text-sm text-secondary-500 mt-6'>
-          © 2024 {APP_NAME}. Todos los derechos reservados.
+        <p className='text-center text-sm text-secondary-500 mt-4'>
+          © 2026 {APP_NAME}. Todos los derechos reservados.
         </p>
       </div>
     </div>

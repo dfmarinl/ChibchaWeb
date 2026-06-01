@@ -15,16 +15,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.chibchaweb.chibchaweb.pago.application.PagoService;
-import com.chibchaweb.chibchaweb.pago.application.SuscripcionService;
 import com.chibchaweb.chibchaweb.pago.domain.Periodicidad;
-import com.chibchaweb.chibchaweb.pago.domain.Suscripcion;
-import com.chibchaweb.chibchaweb.pago.infrastructure.dto.PagoResponse;
 import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
-import com.chibchaweb.chibchaweb.pago.infrastructure.persistence.PagoDataMapper;
 import com.chibchaweb.chibchaweb.plan.application.HostingPlanService;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.AsociarPlataformaRequest;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.CompraPlanRequest;
+import com.chibchaweb.chibchaweb.plan.infrastructure.dto.CompraPlanResult;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.CrearPlanRequest;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.ModificarPlanRequest;
 import com.chibchaweb.chibchaweb.plan.infrastructure.dto.PlanHostingResponse;
@@ -37,18 +33,10 @@ public class PlanHostingController {
 
     private final HostingPlanService service;
     private final ClienteService clienteService;
-    private final PagoService pagoService;
-    private final SuscripcionService suscripcionService;
-    private final PagoDataMapper pagoMapper;
 
-    public PlanHostingController(HostingPlanService service, ClienteService clienteService,
-                                  PagoService pagoService, SuscripcionService suscripcionService,
-                                  PagoDataMapper pagoMapper) {
+    public PlanHostingController(HostingPlanService service, ClienteService clienteService) {
         this.service = service;
         this.clienteService = clienteService;
-        this.pagoService = pagoService;
-        this.suscripcionService = suscripcionService;
-        this.pagoMapper = pagoMapper;
     }
 
     @PostMapping
@@ -134,28 +122,27 @@ public class PlanHostingController {
         String email = (String) auth.getPrincipal();
         Long clienteId = clienteService.buscarPorEmail(email).id();
 
-        PlanHostingResponse plan = service.consultar(id);
-
         try {
             Periodicidad periodicidad = Periodicidad.valueOf(request.periodicidad().toUpperCase());
-            PagoResponse pagoResponse = pagoService.procesarPagoCompra(clienteId, request.tarjetaId(),
-                                                                       plan.precioMensual(), periodicidad);
-
-            var pago = pagoMapper.findById(pagoResponse.id());
-            Suscripcion suscripcion = suscripcionService.activar(clienteId, id, periodicidad, pago);
+            CompraPlanResult result = service.comprarPlan(clienteId, id, request.tarjetaId(), periodicidad);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "exitoso", true,
                 "mensaje", "Plan adquirido exitosamente",
-                "pago", pagoResponse,
-                "suscripcionId", suscripcion.getId(),
-                "fechaFin", suscripcion.getFechaFin().toString()
+                "pago", result.pagoResponse(),
+                "suscripcionId", result.suscripcionId(),
+                "fechaFin", result.fechaFin()
             ));
         } catch (IntentoLimiteExcedidoException e) {
             return ResponseEntity.status(423).body(Map.of(
                 "exitoso", false,
                 "mensaje", e.getMessage(),
                 "limiteExcedido", true
+            ));
+        } catch (PlanNoEncontradoException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "exitoso", false,
+                "mensaje", e.getMessage()
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of(

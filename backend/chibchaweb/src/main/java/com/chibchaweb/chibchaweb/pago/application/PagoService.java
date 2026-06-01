@@ -27,7 +27,7 @@ import com.chibchaweb.chibchaweb.usuario.infrastructure.persistence.ClienteDataM
 @Transactional
 public class PagoService {
 
-    private static final double MONTO_LIMITE_SIMULACION = 500;
+    private static final double MONTO_LIMITE_SIMULACION = 1_000_000;
 
     private final PagoDataMapper pagoMapper;
     private final PagoJpaRepository pagoJpaRepository;
