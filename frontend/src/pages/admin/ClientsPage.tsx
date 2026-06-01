@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Eye, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { PageHeader } from '../../components/common';
 import { Table, Thead, Tbody, Th, Tr, Td, EmptyState } from '../../components/tables';
@@ -20,6 +20,8 @@ const ClientsPage: React.FC = () => {
   const [viewTarget, setViewTarget] = useState<Client | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [registroIntentos, setRegistroIntentos] = useState<number | null>(null);
+  const [registroBlocked, setRegistroBlocked] = useState(false);
 
   const fetchClients = async () => {
     try {
@@ -48,10 +50,21 @@ const ClientsPage: React.FC = () => {
     try {
       await authApi.registerCliente(data as CreateClientData);
       setModalMode(null);
+      setRegistroIntentos(null);
+      setRegistroBlocked(false);
       await fetchClients();
     } catch (err: any) {
-      const msg = err?.response?.data?.error || err?.response?.data?.mensaje;
-      setError(msg || 'Error al crear cliente');
+      const resp = err?.response?.data;
+      if (resp?.limiteExcedido) {
+        setRegistroBlocked(true);
+        setError(resp.error || 'Has superado el límite de intentos');
+      } else if (resp?.intentosRestantes !== undefined) {
+        setRegistroIntentos(resp.intentosRestantes);
+        setError(resp.error || 'Error al crear cliente');
+      } else {
+        const msg = resp?.error || resp?.mensaje;
+        setError(msg || 'Error al crear cliente');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -113,7 +126,7 @@ const ClientsPage: React.FC = () => {
         title='Gestión de Clientes'
         description='Administra los clientes registrados en la plataforma'
         action={
-          <Button variant='primary' leftIcon={<Plus className='w-4 h-4' />} onClick={() => setModalMode('create')}>
+          <Button variant='primary' leftIcon={<Plus className='w-4 h-4' />} onClick={() => { setModalMode('create'); setRegistroIntentos(null); setRegistroBlocked(false); setError(''); }}>
             Nuevo Cliente
           </Button>
         }
@@ -206,10 +219,11 @@ const ClientsPage: React.FC = () => {
         title='Nuevo Cliente'
         footer={
           <>
-            <Button variant='outline' onClick={closeModal}>Cancelar</Button>
+            <Button variant='outline' onClick={closeModal} disabled={submitting}>Cancelar</Button>
             <Button
               variant='primary'
               isLoading={submitting}
+              disabled={registroBlocked}
               onClick={() => {
                 const form = document.querySelector('#client-form') as HTMLFormElement;
                 form?.requestSubmit();
@@ -220,7 +234,23 @@ const ClientsPage: React.FC = () => {
           </>
         }
       >
-        <ClientForm id='client-form' onSubmit={handleCreate} isLoading={submitting} />
+        {registroBlocked && (
+          <div className='mb-4 flex items-center gap-2 px-4 py-3 bg-error-50 text-error-700 rounded-lg border border-error-200'>
+            <XCircle className='w-5 h-5 flex-shrink-0' />
+            <span className='text-sm font-medium'>Has superado el límite de intentos. Espera 30 minutos e intenta de nuevo.</span>
+          </div>
+        )}
+
+        {registroIntentos !== null && !registroBlocked && (
+          <div className='mb-4 flex items-center gap-2 px-4 py-3 bg-warning-50 text-warning-700 rounded-lg border border-warning-200'>
+            <AlertCircle className='w-5 h-5 flex-shrink-0' />
+            <span className='text-sm font-medium'>
+              Te quedan {registroIntentos} intento{registroIntentos !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
+
+        <ClientForm id='client-form' onSubmit={handleCreate} isLoading={submitting} blocked={registroBlocked} />
       </Modal>
 
       {/* Edit Modal */}

@@ -14,7 +14,6 @@ export interface CreateDistribuidorData {
   nombre: string;
   email: string;
   region?: string;
-  codigoDistribuidor: string;
   maxDominios: number;
 }
 

@@ -1,5 +1,6 @@
 package com.chibchaweb.chibchaweb.distribuidor.infrastructure.exception;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.chibchaweb.chibchaweb.pago.infrastructure.exception.IntentoLimiteExcedidoException;
 
 @RestControllerAdvice("com.chibchaweb.chibchaweb.distribuidor.presentation")
 public class DistribuidorExceptionHandler {
@@ -19,9 +21,31 @@ public class DistribuidorExceptionHandler {
     }
 
     @ExceptionHandler(EmailDuplicadoException.class)
-    public ResponseEntity<Map<String, String>> handleEmailDuplicado(EmailDuplicadoException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("error", ex.getMessage()));
+    public ResponseEntity<Map<String, Object>> handleEmailDuplicado(EmailDuplicadoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage());
+        if (ex.getIntentosRestantes() >= 0) {
+            body.put("intentosRestantes", ex.getIntentosRestantes());
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @ExceptionHandler(NombreDuplicadoException.class)
+    public ResponseEntity<Map<String, Object>> handleNombreDuplicado(NombreDuplicadoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage());
+        if (ex.getIntentosRestantes() >= 0) {
+            body.put("intentosRestantes", ex.getIntentosRestantes());
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @ExceptionHandler(IntentoLimiteExcedidoException.class)
+    public ResponseEntity<Map<String, Object>> handleIntentoLimiteExcedido(IntentoLimiteExcedidoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage());
+        body.put("limiteExcedido", true);
+        return ResponseEntity.status(HttpStatus.LOCKED).body(body);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

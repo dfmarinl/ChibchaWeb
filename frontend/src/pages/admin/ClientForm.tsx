@@ -9,9 +9,10 @@ interface ClientFormProps {
   onSubmit: (data: CreateClientData | UpdateClientData) => void | Promise<void>;
   isLoading: boolean;
   id?: string;
+  blocked?: boolean;
 }
 
-const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoading, id }) => {
+const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoading, id, blocked }) => {
   const [nombre, setNombre] = useState(initialData?.nombre || '');
   const [email, setEmail] = useState(initialData?.email || '');
   const [documentoIdentidad, setDocumentoIdentidad] = useState(initialData?.documentoIdentidad || '');
@@ -74,6 +75,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         leftIcon={<User className='w-5 h-5' />}
         error={fieldErrors.nombre}
         required
+        disabled={blocked}
       />
       <Input
         label='Correo Electrónico'
@@ -85,6 +87,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         leftIcon={<Mail className='w-5 h-5' />}
         error={fieldErrors.email}
         required
+        disabled={blocked}
       />
       <Input
         label='Documento de Identidad'
@@ -95,6 +98,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         leftIcon={<FileText className='w-5 h-5' />}
         error={fieldErrors.documentoIdentidad}
         required
+        disabled={blocked}
       />
       <Input
         label='Teléfono'
@@ -105,6 +109,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         placeholder='8888-0000'
         leftIcon={<Phone className='w-5 h-5' />}
         error={fieldErrors.telefono}
+        disabled={blocked}
       />
       <Input
         label='Dirección'
@@ -112,6 +117,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         onChange={(e) => setDireccion(e.target.value)}
         placeholder='San José, Costa Rica'
         leftIcon={<MapPin className='w-5 h-5' />}
+        disabled={blocked}
       />
       <Input
         label='Región'
@@ -121,6 +127,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
         placeholder='San José'
         leftIcon={<Globe className='w-5 h-5' />}
         error={fieldErrors.region}
+        disabled={blocked}
       />
 
       {!initialData && (
@@ -134,6 +141,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, isLoadin
           leftIcon={<Lock className='w-5 h-5' />}
           error={fieldErrors.contrasena}
           required
+          disabled={blocked}
         />
       )}
 
