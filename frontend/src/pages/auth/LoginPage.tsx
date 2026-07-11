@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Server, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui';
 import { APP_NAME } from '../../constants';
+import { DEMO_CREDENTIALS } from '../../constants/credentials';
 import { useAuth } from '../../hooks';
 import { validators } from '../../utils/validation';
 
@@ -114,6 +115,21 @@ const LoginPage: React.FC = () => {
               >
                 Iniciar Sesión
               </Button>
+
+              {/* Demo Credentials */}
+              <details className='rounded-lg border border-secondary-200 bg-secondary-50 p-3'>
+                <summary className='cursor-pointer text-xs font-medium text-secondary-600 hover:text-primary-600'>
+                  Credenciales de prueba
+                </summary>
+                <div className='mt-2 space-y-1 text-xs text-secondary-600'>
+                  {DEMO_CREDENTIALS.map((c) => (
+                    <p key={c.rol}>
+                      <span className='font-semibold text-secondary-800'>{c.rol}:</span>{' '}
+                      {c.email} / <span className='font-mono'>{c.password}</span>
+                    </p>
+                  ))}
+                </div>
+              </details>
 
               {/* Link to Register */}
               <p className='text-center text-sm text-secondary-600'>
