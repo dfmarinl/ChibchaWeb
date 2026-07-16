@@ -116,20 +116,33 @@ const LoginPage: React.FC = () => {
                 Iniciar Sesión
               </Button>
 
-              {/* Demo Credentials */}
-              <details className='rounded-lg border border-secondary-200 bg-secondary-50 p-3'>
-                <summary className='cursor-pointer text-xs font-medium text-secondary-600 hover:text-primary-600'>
-                  Credenciales de prueba
-                </summary>
-                <div className='mt-2 space-y-1 text-xs text-secondary-600'>
+              {/* Demo Accounts */}
+              <div className='rounded-lg border border-secondary-200 bg-secondary-50 p-4'>
+                <p className='text-xs font-medium text-secondary-600 mb-3'>
+                  Cuentas de demostración
+                </p>
+                <div className='space-y-2'>
                   {DEMO_CREDENTIALS.map((c) => (
-                    <p key={c.rol}>
-                      <span className='font-semibold text-secondary-800'>{c.rol}:</span>{' '}
-                      {c.email} / <span className='font-mono'>{c.password}</span>
-                    </p>
+                    <button
+                      key={c.rol}
+                      type='button'
+                      onClick={() => {
+                        setEmail(c.email);
+                        setPassword(c.password);
+                        setFieldErrors({});
+                        setError('');
+                      }}
+                      className='w-full flex items-center justify-between p-2.5 rounded-lg border border-secondary-200 bg-white hover:border-primary-400 hover:bg-primary-50 transition-colors text-left'
+                    >
+                      <div>
+                        <p className='text-sm font-medium text-secondary-800'>{c.rol}</p>
+                        <p className='text-xs text-secondary-500'>{c.email}</p>
+                      </div>
+                      <span className='text-xs text-primary-600 font-medium'>Usar</span>
+                    </button>
                   ))}
                 </div>
-              </details>
+              </div>
 
               {/* Link to Register */}
               <p className='text-center text-sm text-secondary-600'>
